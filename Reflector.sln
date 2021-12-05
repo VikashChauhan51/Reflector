@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reflector", "Reflector\Reflector.csproj", "{54EA46A0-6E01-46E4-A653-D1A5E0F52A99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reflector", "Reflector\Reflector.csproj", "{54EA46A0-6E01-46E4-A653-D1A5E0F52A99}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReflectorApp", "ReflectorApp\ReflectorApp.csproj", "{AA0AF675-01A5-4396-AAB2-55A79387D6DC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReflectorApp", "ReflectorApp\ReflectorApp.csproj", "{AA0AF675-01A5-4396-AAB2-55A79387D6DC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReflectorTest", "ReflectorTest\ReflectorTest.csproj", "{87E4B9F9-FB2D-49EF-9D9B-BF6755445093}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{AA0AF675-01A5-4396-AAB2-55A79387D6DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA0AF675-01A5-4396-AAB2-55A79387D6DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA0AF675-01A5-4396-AAB2-55A79387D6DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87E4B9F9-FB2D-49EF-9D9B-BF6755445093}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87E4B9F9-FB2D-49EF-9D9B-BF6755445093}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87E4B9F9-FB2D-49EF-9D9B-BF6755445093}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87E4B9F9-FB2D-49EF-9D9B-BF6755445093}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
