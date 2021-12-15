@@ -2,7 +2,7 @@
 
 // See https://aka.ms/new-console-template for more information
 
-Console.WriteLine(Reflector.Reflector.IsImmutable(typeof(D),checkNonPublicSetter:true));
+Console.WriteLine("");
 
 
 

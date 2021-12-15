@@ -12,15 +12,11 @@ public static class Reflector
     {
         // is there any base type?
         if (type == null)
-        {
             yield break;
-        }
 
         // return all implemented or inherited interfaces
         foreach (var @interface in type.GetInterfaces())
-        {
             yield return @interface;
-        }
 
         // return all inherited types
         var currentBaseType = type.BaseType;
@@ -31,81 +27,70 @@ public static class Reflector
         }
     }
 
-    public static bool IsImmutable(Type type, bool checkNonPublicSetter = false, int depth = 10)
-    {
-        static bool Immutable(Type type) => type == typeof(string) || type.IsValueType;
-        IEnumerable<FieldInfo> GetFields(Type type) => type.GetFields()
-            .Where(fInfo => !fInfo.IsStatic)
-            .Where(fInfo => fInfo.FieldType != type);
-        IEnumerable<PropertyInfo> GetProperties(Type type) => type.GetProperties()
-                       .Where(pInfo => pInfo.GetMethod != null && !pInfo.GetMethod.IsStatic)
-                       .Where(pInfo => pInfo.PropertyType != type);
-
-        if (Immutable(type))
-            return true;
-
-        else
-        {
-            var fields = GetFields(type);
-
-            if (fields.Any(fInfo => !fInfo.IsInitOnly))
-                return false;
-            var properties = GetProperties(type);
-
-            if (!properties.Any() && !fields.Any())
-                return true;
-
-            return (!fields.Any() || fields
-                .All(fInfo => fInfo.IsInitOnly && (depth <= 1 || IsImmutable(fInfo.FieldType, checkNonPublicSetter, depth - 1)))) &&
-                (!properties.Any() ||
-                     properties
-                       .All(pInfo => !SetIsAllowed(pInfo, checkNonPublicSetter: checkNonPublicSetter) && (depth <= 1 || IsImmutable(pInfo.PropertyType, checkNonPublicSetter, depth - 1))));
-        }
-
-    }
-
-    public static bool SetIsAllowed(PropertyInfo pInfo, bool checkNonPublicSetter)
+    public static bool SetIsAllowed(PropertyInfo pInfo, bool checkNonPublicSetter = false, bool checkInitSetter = false)
     {
         var setMethod = pInfo.GetSetMethod(nonPublic: checkNonPublicSetter);
         if (setMethod == null)
             return false;
-        //check property is init only
 
         // Get the modifiers applied to the return parameter.
         var setMethodReturnParameterModifiers = setMethod.ReturnParameter.GetRequiredCustomModifiers();
-
         // Init-only properties are marked with the IsExternalInit type.
         var IsExternalInit = setMethodReturnParameterModifiers.Contains(typeof(System.Runtime.CompilerServices.IsExternalInit));
-        if (IsExternalInit)
+        if (IsExternalInit && !checkInitSetter)
             return false;
+
+        if (IsExternalInit && checkInitSetter)
+            return true;
 
         return pInfo.CanWrite &&
                ((!checkNonPublicSetter && setMethod.IsPublic) ||
                 (checkNonPublicSetter && (setMethod.IsPrivate ||
-                setMethod.IsFamily || setMethod.IsPublic || setMethod.IsAbstract)));
+                setMethod.IsFamily || setMethod.IsPublic ||
+                setMethod.IsAbstract)));
 
     }
 
     public static bool IsCustomStruct(Type type)
     {
-        var isStruct = type.GetTypeInfo().IsValueType && !type.GetTypeInfo().IsPrimitive && !type.GetTypeInfo().IsEnum && type != typeof(Guid);
+        var typeInfo = type?.GetTypeInfo();
+        if (typeInfo == null)
+            return false;
+
+        var isStruct = !IsPrimitive(type!) && typeInfo.IsValueType && !typeInfo.IsEnum && type != typeof(Guid);
         if (!isStruct) return false;
-        var ctor = type.GetTypeInfo().GetConstructor(new[] { typeof(string) });
+        var ctor = typeInfo.GetConstructor(new[] { typeof(string) });
         return ctor != null;
     }
     public static bool IsPrimitive(Type type)
     {
-        return
-               (type.GetTypeInfo().IsValueType && type != typeof(Guid))
-            || type.GetTypeInfo().IsPrimitive
+        var typeInfo = type?.GetTypeInfo();
+        if (typeInfo == null)
+            return false;
+
+        return (typeInfo.IsPrimitive
             || new[] {
                      typeof(string)
                     ,typeof(decimal)
                     ,typeof(DateTime)
                     ,typeof(DateTimeOffset)
                     ,typeof(TimeSpan)
+                    ,typeof(Char)
+                    ,typeof(String)
+                    ,typeof(Int32)
+                    ,typeof(Int64)
+                    ,typeof(Byte)
+                    ,typeof(Decimal)
+                    ,typeof(Double)
+                    ,typeof(Boolean)
+                    ,typeof(SByte)
+                    ,typeof(Single)
+                    ,typeof(UInt16)
+                    ,typeof(UInt32)
+                    ,typeof(UInt64)
+                    ,typeof(UIntPtr)
                }.Contains(type)
-            || Convert.GetTypeCode(type) != TypeCode.Object;
+            || Convert.GetTypeCode(type) == TypeCode.Object);
     }
 
     public static object? InvokeStaticMethod(Type type, string name, params object[] args)
@@ -125,7 +110,7 @@ public static class Reflector
             BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Static,
             null,
             null,
-            new object[] { });
+            Array.Empty<object>());
     }
 
     public static object? SetStaticProperty(Type type, string name, object value)
@@ -154,7 +139,7 @@ public static class Reflector
             BindingFlags.GetProperty | BindingFlags.Public | BindingFlags.Instance,
             null,
             target,
-            new object[] { });
+            Array.Empty<object>());
     }
     public static object? SetInstanceProperty(Type type, string name, object target, object value)
     {
@@ -165,19 +150,69 @@ public static class Reflector
             target, new object[] { value });
     }
 
+    public static object? GetInstanceField(Type type, string name, object target)
+    {
+        return type?.GetTypeInfo().InvokeMember(
+            name,
+            BindingFlags.GetField | BindingFlags.Public | BindingFlags.Instance,
+            null,
+            target,
+            Array.Empty<object>());
+    }
+    public static object? GetStaticField(Type type, string name)
+    {
+        return type?.GetTypeInfo().InvokeMember(
+            name,
+            BindingFlags.GetField | BindingFlags.Public | BindingFlags.Static,
+            null,
+            null,
+            Array.Empty<object>());
+    }
+    public static object? SetInstanceField(Type type, string name, object target, object value)
+    {
+        return type?.GetTypeInfo().InvokeMember(
+            name,
+            BindingFlags.SetField | BindingFlags.Public | BindingFlags.Instance,
+            null,
+            target, new object[] { value });
+    }
+    public static object? SetStaticField(Type type, string name, object value)
+    {
+        return type?.GetTypeInfo().InvokeMember(
+            name,
+            BindingFlags.SetField | BindingFlags.Public | BindingFlags.Static,
+            null,
+            null,
+            new object[] { value });
+    }
+
+    public static object? SetCustomStructInstanceProperty(Type type, string name, object target, object value)
+    {
+        if (IsCustomStruct(type))
+            return null;
+        var propInfo = type.GetProperty(name, BindingFlags.SetProperty | BindingFlags.Public | BindingFlags.Instance);
+        if (propInfo == null) return null;
+
+        propInfo.SetValue(target, value, null);
+        return target;
+    }
+
     public static Assembly GetExecutingOrEntryAssembly()
     {
         return Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
     }
 
-    public static IEnumerable<string> GetNamesOfEnum(Type t)
+    public static IEnumerable<string> GetNamesOfEnum(Type type)
     {
-        if (t.IsEnum)
-            return Enum.GetNames(t);
-        Type? u = Nullable.GetUnderlyingType(t);
-        if (u != null && u.IsEnum)
-            return Enum.GetNames(u);
-        return Enumerable.Empty<string>();
+        if (type == null)
+            return Enumerable.Empty<string>();
+
+        if (type.IsEnum)
+            return Enum.GetNames(type);
+
+        Type? u = Nullable.GetUnderlyingType(type);
+        return (u != null && u.IsEnum) ? Enum.GetNames(u) : Enumerable.Empty<string>();
+
     }
 
     public static string? GetAssemblyName()
@@ -192,30 +227,29 @@ public static class Reflector
         return Convert.ToString(assembly?.GetName().Version, CultureInfo.InvariantCulture);
     }
 
-    public static bool IsEnum(Type type)
-    {
-        return type.GetTypeInfo().BaseType == typeof(Enum);
-    }
-    public static object? GetEnumPropertyValue(PropertyInfo targetType, string value, bool ignoreCase = false)
-    {
-        return IsEnum(targetType.PropertyType) ? Enum.Parse(targetType.PropertyType, value, ignoreCase) : null;
-    }
+    public static bool IsEnum(Type type) => type?.GetTypeInfo()?.BaseType == typeof(Enum);
+
+    public static object? GetEnumPropertyValue(PropertyInfo targetType, string value, bool ignoreCase = false) =>
+    IsEnum(targetType.PropertyType) ? Enum.Parse(targetType.PropertyType, value, ignoreCase) : null;
 
     public static bool IsNullable(PropertyInfo property) =>
     IsNullable(property.PropertyType, property.DeclaringType, property.CustomAttributes);
 
     public static bool IsNullable(FieldInfo field) =>
-        IsNullable(field.FieldType, field.DeclaringType, field.CustomAttributes);
+    IsNullable(field.FieldType, field.DeclaringType, field.CustomAttributes);
 
     public static bool IsNullable(ParameterInfo parameter) =>
-        IsNullable(parameter.ParameterType, parameter.Member, parameter.CustomAttributes);
+    IsNullable(parameter.ParameterType, parameter.Member, parameter.CustomAttributes);
 
     public static bool IsNullable(Type memberType, MemberInfo? declaringType, IEnumerable<CustomAttributeData> customAttributes)
     {
+        if (memberType == null)
+            return true;
+
         if (memberType.IsValueType)
             return Nullable.GetUnderlyingType(memberType) != null;
 
-        var nullable = customAttributes
+        var nullable = customAttributes?
             .FirstOrDefault(x => x.AttributeType.FullName == "System.Runtime.CompilerServices.NullableAttribute");
         if (nullable != null && nullable.ConstructorArguments.Count == 1)
         {
