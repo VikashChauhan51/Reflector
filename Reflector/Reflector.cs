@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Reflection;
 
-//namespace
+//namespace naming
 namespace Reflector;
 
 public static class Reflector
