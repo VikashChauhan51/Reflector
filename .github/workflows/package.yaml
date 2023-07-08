@@ -2,7 +2,7 @@ name: Build, Pack and Publish
 
 on:
   push:
-    branches: [ "master" ] 
+    branches: [ "main" ] 
 
 
 jobs:
