@@ -1,7 +1,6 @@
 using NUnit.Framework;
 using System;
 using ReflectorTest.Entities;
-using static Reflector.Reflector;
 
 namespace ReflectorTest
 {
@@ -21,7 +20,7 @@ namespace ReflectorTest
         public void Verify_Type_Is_Enum(Type type)
         {
             
-            var result= IsEnum(type);
+            var result= Reflector.Reflector.IsEnum(type);
             Assert.IsTrue(result,$"{type.Name} is not Enum type");  
         }
     }

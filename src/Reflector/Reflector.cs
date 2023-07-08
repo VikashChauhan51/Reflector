@@ -8,7 +8,7 @@ namespace Reflector;
 public static class Reflector
 {
 
-    public static IEnumerable<Type> GetParentTypes(Type type)
+    public static IEnumerable<Type> GetParentTypes(this Type type)
     {
         // is there any base type?
         if (type == null)
@@ -27,7 +27,7 @@ public static class Reflector
         }
     }
 
-    public static bool SetIsAllowed(PropertyInfo pInfo, bool checkNonPublicSetter = false, bool checkInitSetter = false)
+    public static bool SetIsAllowed(this PropertyInfo pInfo, bool checkNonPublicSetter = false, bool checkInitSetter = false)
     {
         var setMethod = pInfo.GetSetMethod(nonPublic: checkNonPublicSetter);
         if (setMethod == null)
@@ -51,7 +51,7 @@ public static class Reflector
 
     }
 
-    public static bool IsCustomStruct(Type type)
+    public static bool IsCustomStruct(this Type type)
     {
         var typeInfo = type?.GetTypeInfo();
         if (typeInfo == null)
@@ -62,7 +62,7 @@ public static class Reflector
         var ctor = typeInfo.GetConstructor(new[] { typeof(string) });
         return ctor != null;
     }
-    public static bool IsPrimitive(Type type)
+    public static bool IsPrimitive(this Type type)
     {
         var typeInfo = type?.GetTypeInfo();
         if (typeInfo == null)
@@ -93,7 +93,7 @@ public static class Reflector
             || Convert.GetTypeCode(type) == TypeCode.Object);
     }
 
-    public static object? InvokeStaticMethod(Type type, string name, params object[] args)
+    public static object? InvokeStaticMethod(this Type type, string name, params object[] args)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -103,7 +103,7 @@ public static class Reflector
             args);
     }
 
-    public static object? GetStaticProperty(Type type, string name)
+    public static object? GetStaticProperty(this Type type, string name)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -113,7 +113,7 @@ public static class Reflector
             Array.Empty<object>());
     }
 
-    public static object? SetStaticProperty(Type type, string name, object value)
+    public static object? SetStaticProperty(this Type type, string name, object value)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -123,7 +123,7 @@ public static class Reflector
             new object[] { value });
     }
 
-    public static object? InvokeInstancMethod(Type type, string name, object target, params object[] args)
+    public static object? InvokeInstancMethod(this Type type, string name, object target, params object[] args)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -132,7 +132,7 @@ public static class Reflector
             target,
             args);
     }
-    public static object? GetInstanceProperty(Type type, string name, object target)
+    public static object? GetInstanceProperty(this Type type, string name, object target)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -141,7 +141,7 @@ public static class Reflector
             target,
             Array.Empty<object>());
     }
-    public static object? SetInstanceProperty(Type type, string name, object target, object value)
+    public static object? SetInstanceProperty(this Type type, string name, object target, object value)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -150,7 +150,7 @@ public static class Reflector
             target, new object[] { value });
     }
 
-    public static object? GetInstanceField(Type type, string name, object target)
+    public static object? GetInstanceField(this Type type, string name, object target)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -159,7 +159,7 @@ public static class Reflector
             target,
             Array.Empty<object>());
     }
-    public static object? GetStaticField(Type type, string name)
+    public static object? GetStaticField(this Type type, string name)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -168,7 +168,7 @@ public static class Reflector
             null,
             Array.Empty<object>());
     }
-    public static object? SetInstanceField(Type type, string name, object target, object value)
+    public static object? SetInstanceField(this Type type, string name, object target, object value)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -176,7 +176,7 @@ public static class Reflector
             null,
             target, new object[] { value });
     }
-    public static object? SetStaticField(Type type, string name, object value)
+    public static object? SetStaticField(this Type type, string name, object value)
     {
         return type?.GetTypeInfo().InvokeMember(
             name,
@@ -186,7 +186,7 @@ public static class Reflector
             new object[] { value });
     }
 
-    public static object? SetCustomStructInstanceProperty(Type type, string name, object target, object value)
+    public static object? SetCustomStructInstanceProperty(this Type type, string name, object target, object value)
     {
         if (IsCustomStruct(type))
             return null;
@@ -202,7 +202,7 @@ public static class Reflector
         return Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
     }
 
-    public static IEnumerable<string> GetNamesOfEnum(Type type)
+    public static IEnumerable<string> GetNamesOfEnum(this Type type)
     {
         if (type == null)
             return Enumerable.Empty<string>();
@@ -227,21 +227,21 @@ public static class Reflector
         return Convert.ToString(assembly?.GetName().Version, CultureInfo.InvariantCulture);
     }
 
-    public static bool IsEnum(Type type) => type?.GetTypeInfo()?.BaseType == typeof(Enum);
+    public static bool IsEnum(this Type type) => type?.GetTypeInfo()?.BaseType == typeof(Enum);
 
-    public static object? GetEnumPropertyValue(PropertyInfo targetType, string value, bool ignoreCase = false) =>
+    public static object? GetEnumPropertyValue(this PropertyInfo targetType, string value, bool ignoreCase = false) =>
     IsEnum(targetType.PropertyType) ? Enum.Parse(targetType.PropertyType, value, ignoreCase) : null;
 
-    public static bool IsNullable(PropertyInfo property) =>
+    public static bool IsNullable(this PropertyInfo property) =>
     IsNullable(property.PropertyType, property.DeclaringType, property.CustomAttributes);
 
-    public static bool IsNullable(FieldInfo field) =>
+    public static bool IsNullable(this FieldInfo field) =>
     IsNullable(field.FieldType, field.DeclaringType, field.CustomAttributes);
 
-    public static bool IsNullable(ParameterInfo parameter) =>
+    public static bool IsNullable(this ParameterInfo parameter) =>
     IsNullable(parameter.ParameterType, parameter.Member, parameter.CustomAttributes);
 
-    public static bool IsNullable(Type memberType, MemberInfo? declaringType, IEnumerable<CustomAttributeData> customAttributes)
+    public static bool IsNullable(this Type memberType, MemberInfo? declaringType, IEnumerable<CustomAttributeData> customAttributes)
     {
         if (memberType == null)
             return true;
