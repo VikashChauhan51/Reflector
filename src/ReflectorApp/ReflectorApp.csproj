@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Reflector\Reflector.csproj" />
+    <ProjectReference Include="..\Reflector\VReflector.csproj" />
   </ItemGroup>
 
 </Project>

@@ -22,7 +22,7 @@ jobs:
       run: dotnet build --configuration Release --no-restore
       working-directory: src
     - name: Pack
-      run: dotnet pack Reflector/Reflector.csproj --configuration Release --no-build --output nupkgs
+      run: dotnet pack Reflector/VReflector.csproj --configuration Release --no-build --output nupkgs
       working-directory: src
     - name: Publish
       run: dotnet nuget push nupkgs/*.nupkg --api-key ${{ secrets.NUGET_APIKEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
