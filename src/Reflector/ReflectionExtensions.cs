@@ -2,10 +2,9 @@
 using System.Globalization;
 using System.Reflection;
 
-//namespace
 namespace Reflector;
 
-public static class Reflector
+public static class ReflectionExtensions
 {
 
     public static IEnumerable<Type> GetParentTypes(this Type type)
@@ -90,7 +89,7 @@ public static class Reflector
                     ,typeof(UInt64)
                     ,typeof(UIntPtr)
                }.Contains(type)
-            || Convert.GetTypeCode(type) == TypeCode.Object);
+            || Convert.GetTypeCode(type) != TypeCode.Object);
     }
 
     public static object? InvokeStaticMethod(this Type type, string name, params object[] args)
@@ -218,7 +217,7 @@ public static class Reflector
     public static string? GetAssemblyName()
     {
         var assembly = GetExecutingOrEntryAssembly();
-        return assembly.GetName().Name;
+        return assembly?.GetName().Name;
     }
 
     public static string? GetAssemblyVersion()
@@ -281,6 +280,76 @@ public static class Reflector
         }
         return false;
     }
+
+    public static bool IsNullable(Type? type) => type is null || type.IsClass || Nullable.GetUnderlyingType(type) != null;
+    public static Type? GetType(object obj) => obj?.GetType();
+
+    public static ConstructorInfo[]? GetAllConstructors(this Type type)
+    {
+        return type?.GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic)?.ToArray();
+    }
+
+    public static ConstructorInfo[]? GetConstructors(this Type type)
+    {
+        return type?.GetConstructors()?.ToArray();
+    }
+
+    public static ParameterInfo[]? GetAllParameters(this ConstructorInfo constructor)
+    {
+        return constructor?.GetParameters();
+    }
+    public static ParameterInfo[]? GetRequiredParameters(this ConstructorInfo constructor)
+    {
+        return constructor?.GetParameters().Where(x => x.IsOptional == false).ToArray();
+    }
+
+    public static object CreateEmptyArray(this Type type)
+    {
+        return Array.CreateInstance(type, 0);
+    }
+
+    public static object? GetDefaultValue(this Type? type)
+    {
+        return type?.IsValueType == true ? Activator.CreateInstance(type) : null;
+    }
+
+    public static IEnumerable<Type> SafeGetInterfaces(this Type? type)
+    {
+        return type == null ? Enumerable.Empty<Type>() : type.GetTypeInfo().GetInterfaces();
+    }
+
+    public static object? CreateDefaultForImmutable(this Type? type)
+    {
+        if (type?.GetTypeInfo().IsGenericType == true && type?.GetTypeInfo().GetGenericTypeDefinition() == typeof(IEnumerable<>))
+        {
+            return type.GetTypeInfo().GetGenericArguments()[0].CreateEmptyArray();
+        }
+        return type?.GetDefaultValue();
+    }
+
+    public static bool IsMutable(this Type? type)
+    {
+        if (type == null)
+            return false;
+
+        if (type == typeof(object))
+            return true;
+
+        var inheritedTypes = type.GetTypeInfo().GetParentTypes().Select(i => i.GetTypeInfo());
+
+        foreach (var inheritedType in inheritedTypes)
+        {
+            if (
+                inheritedType.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance).Any(p => p.CanWrite) ||
+                inheritedType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance).Any()
+                )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
-       
-    
+
+

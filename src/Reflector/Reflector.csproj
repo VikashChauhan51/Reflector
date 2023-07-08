@@ -1,9 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <VersionPrefix>1.0.1</VersionPrefix>
+    <SignAssembly>True</SignAssembly>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>Reflector</Title>
+    <Description>Reflection Type helper utility.</Description>
+    <PackageProjectUrl>https://github.com/VikashChauhan51/Reflector</PackageProjectUrl>
+    <Authors>VikashChauhan51</Authors>
+    <Copyright>Copyright © VikashChauhan51, 2023</Copyright>
+    <RepositoryUrl>https://github.com/VikashChauhan51/Reflector</RepositoryUrl>
+    <PackageTags>reflector, reflection, type, utility;dotnet,dotnet-core</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <AssemblyOriginatorKeyFile>..\Reflector.snk</AssemblyOriginatorKeyFile>
+    <RepositoryType>git</RepositoryType>
+    <ProjectGuid>{55EA46A0-6E01-46E4-A653-D1A5E0C52A99}</ProjectGuid>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
 </Project>
