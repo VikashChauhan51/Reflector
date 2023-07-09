@@ -303,8 +303,11 @@ public static class ReflectionExtensions
         return constructor?.GetParameters().Where(x => x.IsOptional == false).ToArray();
     }
 
-    public static object CreateEmptyArray(this Type type)
+    public static Array? CreateEmptyArray(this Type? type)
     {
+        if (type == null)
+            return null;
+
         return Array.CreateInstance(type, 0);
     }
 
@@ -327,7 +330,28 @@ public static class ReflectionExtensions
         return type?.GetDefaultValue();
     }
 
-    public static bool IsMutable(this Type? type)
+    public static bool IsDeepMutable(this Type? type)
+    {
+        if (type == null)
+            return false;
+
+        if (IsMutable(type?.GetTypeInfo()))
+            return true;
+
+        var inheritedTypes = type!.GetParentTypes().Where(x => x != typeof(object)).Select(i => i.GetTypeInfo());
+
+        foreach (TypeInfo inheritedType in inheritedTypes)
+        {
+            if (IsMutable(inheritedType))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool IsMutable(this TypeInfo? type)
     {
         if (type == null)
             return false;
@@ -335,20 +359,8 @@ public static class ReflectionExtensions
         if (type == typeof(object))
             return true;
 
-        var inheritedTypes = type.GetTypeInfo().GetParentTypes().Select(i => i.GetTypeInfo());
-
-        foreach (var inheritedType in inheritedTypes)
-        {
-            if (
-                inheritedType.GetTypeInfo().GetProperties(BindingFlags.Public | BindingFlags.Instance).Any(p => p.CanWrite) ||
-                inheritedType.GetTypeInfo().GetFields(BindingFlags.Public | BindingFlags.Instance).Any()
-                )
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Any(p => SetIsAllowed(p, checkNonPublicSetter: true)) ||
+                type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(f => !f.IsInitOnly).Any();
     }
 }
 

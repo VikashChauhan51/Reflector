@@ -98,3 +98,37 @@ public class D : C, IE, ID
     public B? MyProperty2 { get; }
     public IA? MyProperty3 { get; init; }
 }
+
+public class ImmutableUser
+{
+
+    public readonly int Id;
+    public string Name { get; init; }
+
+    public static readonly int status;
+    public static string Message { get; }
+}
+
+public class MutableUser
+{
+
+    public readonly int Id;
+    public string Name { get; init; }
+    public static string Message { get; private set; }
+}
+
+public class ABCD
+{
+    public B? MyProperty2 { get; }
+    public IA? MyProperty3 { get; init; }
+}
+
+public interface IXYZ
+{
+    public string Name { get; set; }
+}
+
+public class XYZ : IXYZ
+{
+    public string Name { get; set; }
+}

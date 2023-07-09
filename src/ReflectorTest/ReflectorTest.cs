@@ -154,11 +154,11 @@ namespace ReflectorTest
         }
 
         [Test]
-        [TestCase(typeof(MyEmptyEnum),false)]
-        [TestCase(typeof(MyDefaultEnum),true)]
+        [TestCase(typeof(MyEmptyEnum), false)]
+        [TestCase(typeof(MyDefaultEnum), true)]
         [TestCase(typeof(MyEnum), true)]
         [TestCase(typeof(MyByteEnum), true)]
-        [TestCase(typeof(MyEmptyEnum?),false)]
+        [TestCase(typeof(MyEmptyEnum?), false)]
         [TestCase(typeof(MyDefaultEnum?), true)]
         [TestCase(typeof(MyEnum?), true)]
         [TestCase(typeof(MyByteEnum?), true)]
@@ -182,6 +182,37 @@ namespace ReflectorTest
         public bool IsPrimitive_ReturnsExpectedResult(Type type)
         {
             return type.IsPrimitive();
+        }
+
+
+        [TestCase(typeof(Person), ExpectedResult = false)]
+        [TestCase(typeof(object), ExpectedResult = true)]
+        [TestCase(null, ExpectedResult = false)]
+        [TestCase(typeof(ImmutableUser), ExpectedResult = false)]
+        [TestCase(typeof(D), ExpectedResult = true)]
+        [TestCase(typeof(A), ExpectedResult = true)]
+        [TestCase(typeof(MutableUser), ExpectedResult = true)]
+        [TestCase(typeof(ABCD), ExpectedResult = false)]
+        [TestCase(typeof(XYZ), ExpectedResult = true)]
+        [TestCase(typeof(IXYZ), ExpectedResult = true)]
+        public bool IsDeepMutable_ReturnsExpectedResult(Type type)
+        {
+            return type.IsDeepMutable();
+        }
+
+
+        [TestCase(typeof(Person), ExpectedResult = false)]
+        [TestCase(typeof(object), ExpectedResult = true)]
+        [TestCase(typeof(ImmutableUser), ExpectedResult = false)]
+        [TestCase(typeof(D), ExpectedResult = false)]
+        [TestCase(typeof(A), ExpectedResult = true)]
+        [TestCase(typeof(MutableUser), ExpectedResult = true)]
+        [TestCase(typeof(ABCD), ExpectedResult = false)]
+        [TestCase(typeof(XYZ), ExpectedResult = true)]
+        [TestCase(typeof(IXYZ), ExpectedResult = true)]
+        public bool IsMutable_ReturnsExpectedResult(Type type)
+        {
+            return type.GetTypeInfo().IsMutable();
         }
     }
 }
