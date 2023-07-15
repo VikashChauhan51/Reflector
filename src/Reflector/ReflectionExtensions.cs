@@ -351,6 +351,14 @@ public static class ReflectionExtensions
         return false;
     }
 
+    public static bool IsMutable(this Type? type)
+    {
+        if (type == null)
+            return false;
+
+        return IsMutable(type.GetTypeInfo());
+    }
+
     public static bool IsMutable(this TypeInfo? type)
     {
         if (type == null)
@@ -362,6 +370,176 @@ public static class ReflectionExtensions
         return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Any(p => SetIsAllowed(p, checkNonPublicSetter: true)) ||
                 type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(f => !f.IsInitOnly).Any();
     }
+
+    public static FieldInfo[]? GetAllFields(Type type)
+    {
+        return type?.GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).ToArray();
+    }
+
+    public static PropertyInfo[]? GetAllProperties(Type type)
+    {
+        return type?.GetProperties(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).ToArray();
+    }
+
+    public static MethodInfo[]? GetAllMethods(Type type)
+    {
+        return type?.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).ToArray();
+    }
+
+
+    public static EventInfo[]? GetAllEvents(Type type)
+    {
+        return type?.GetEvents(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).ToArray();
+    }
+
+
+    public static FieldInfo[]? GetPublicAndProtectedInstanceAndStaticFields(Type type)
+    {
+
+        return type?.GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(f => f.IsPublic || f.IsFamily).ToArray();
+    }
+
+    public static PropertyInfo[]? GetPublicAndProtectedInstanceAndStaticProperties(Type type)
+    {
+        return type?.GetProperties(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(p => (p.GetMethod != null && (p.GetMethod.IsPublic || p.GetMethod.IsFamily))).ToArray();
+    }
+
+    public static MethodInfo[]? GetPublicAndProtectedInstanceAndStaticMethods(Type type)
+    {
+        return type?.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(m => (m.IsPublic || m.IsFamily) && !m.IsSpecialName).ToArray();
+    }
+
+
+    public static EventInfo[]? GetPublicAndProtectedInstanceAndStaticEvents(Type type)
+    {
+        return type?.GetEvents(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(e => e.AddMethod.IsPublic || e.AddMethod.IsFamily).ToArray();
+    }
+
+    public static FieldInfo[]? GetPublicAndProtectedInstanceFields(Type type)
+    {
+
+        return type?.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(f => f.IsPublic || f.IsFamily).ToArray();
+    }
+
+    public static PropertyInfo[]? GetPublicAndProtectedInstanceProperties(Type type)
+    {
+        return type?.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(p => (p.GetMethod != null && (p.GetMethod.IsPublic || p.GetMethod.IsFamily))).ToArray();
+    }
+
+    public static MethodInfo[]? GetPublicAndProtectedInstanceMethods(Type type)
+    {
+        return type?.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => (m.IsPublic || m.IsFamily) && !m.IsSpecialName).ToArray();
+    }
+
+
+    public static EventInfo[]? GetPublicAndProtectedInstanceEvents(Type type)
+    {
+        return type?.GetEvents(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(e => e.AddMethod.IsPublic || e.AddMethod.IsFamily).ToArray();
+    }
+
+    public static FieldInfo[]? GetPublicAndProtectedStaticFields(Type type)
+    {
+
+        return type?.GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(f => f.IsPublic || f.IsFamily).ToArray();
+    }
+
+    public static PropertyInfo[]? GetPublicAndProtectedStaticProperties(Type type)
+    {
+        return type?.GetProperties(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(p => (p.GetMethod != null && (p.GetMethod.IsPublic || p.GetMethod.IsFamily))).ToArray();
+    }
+
+    public static MethodInfo[]? GetPublicAndProtectedStaticMethods(Type type)
+    {
+        return type?.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(m => (m.IsPublic || m.IsFamily) && !m.IsSpecialName).ToArray();
+    }
+
+    public static EventInfo[]? GetPublicAndProtectedStaticEvents(Type type)
+    {
+        return type?.GetEvents(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic).Where(e => e.AddMethod.IsPublic || e.AddMethod.IsFamily).ToArray();
+    }
+
+    public static FieldInfo[]? GetInternalOrProtectedInstanceAndStaticFields(Type type)
+    {
+
+        return type?.GetFields(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic).Where(f => f.IsFamily || f.IsFamilyOrAssembly || f.IsFamilyAndAssembly).ToArray();
+    }
+
+    public static PropertyInfo[]? GetInternalOrPProtectedInstanceAndStaticProperties(Type type)
+    {
+        return type?.GetProperties(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic).Where(p => (p.GetMethod != null && (p.GetMethod.IsFamily || p.GetMethod.IsFamilyAndAssembly || p.GetMethod.IsFamilyOrAssembly))).ToArray();
+    }
+
+    public static MethodInfo[]? GetInternalOrPProtectedInstanceAndStaticMethods(Type type)
+    {
+        return type?.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic).Where(m => (m.IsFamily || m.IsFamilyAndAssembly || m.IsFamilyOrAssembly) && !m.IsSpecialName).ToArray();
+    }
+
+    public static EventInfo[]? GetInternalOrPProtectedInstanceAndStaticEvents(Type type)
+    {
+        return type?.GetEvents(BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic).Where(e => e.AddMethod.IsFamily || e.AddMethod.IsFamilyAndAssembly || e.AddMethod.IsFamilyAndAssembly).ToArray();
+    }
+
+    public static T GetAttribute<T>(this MemberInfo member) where T : Attribute
+    {
+        return (T)Attribute.GetCustomAttribute(member, typeof(T));
+    }
+
+    public static IEnumerable<MethodInfo>? GetMethodsWithName(this Type type, string methodName)
+    {
+        return type?.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(m => m.Name == methodName);
+    }
+
+    public static IEnumerable<PropertyInfo>? GetPropertiesWithName(this Type type, string propertyName)
+    {
+        return type?.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(p => p.Name == propertyName);
+    }
+
+    public static IEnumerable<FieldInfo>? GetFieldsWithName(this Type type, string fieldName)
+    {
+        return type?.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(f => f.Name == fieldName);
+    }
+
+    public static IEnumerable<MemberInfo>? GetMembersWithName(this Type type, string name)
+    {
+        return type?.GetMembers(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(m => m.Name == name);
+    }
+
+    public static IEnumerable<MemberInfo>? GetEventsWithName(this Type type, string name)
+    {
+        return type?.GetEvents(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(e => e.Name == name);
+    }
+
+
+    public static IEnumerable<MethodInfo>? GetConstructorsWithParameters(this Type type, int parameterCount)
+    {
+        return type?.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(m => m.GetParameters().Length == parameterCount);
+    }
+
+    public static IEnumerable<PropertyInfo>? GetPropertiesWithType(this Type type, Type propertyType)
+    {
+        return type?.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(p => p.PropertyType == propertyType);
+    }
+
+    public static IEnumerable<FieldInfo>? GetFieldsWithType(this Type type, Type fieldType)
+    {
+        return type?.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(f => f.FieldType == fieldType);
+    }
+
+    public static IEnumerable<MethodInfo>? GetInstanceConstructorsWithParameters(this Type type, int parameterCount)
+    {
+        return type?.GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(m => m.GetParameters().Length == parameterCount);
+    }
+
+    public static IEnumerable<PropertyInfo>? GetGetInstancPropertiesWithType(this Type type, Type propertyType)
+    {
+        return type?.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.PropertyType == propertyType);
+    }
+
+    public static IEnumerable<FieldInfo>? GetGetInstancFieldsWithType(this Type type, Type fieldType)
+    {
+        return type?.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(f => f.FieldType == fieldType);
+    }
+
 }
 
 
