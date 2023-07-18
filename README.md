@@ -87,3 +87,37 @@ var result = typeof(D).GetParentTypes();
 
 
 ```
+## Check static class
+``` C#
+public static class MyStaticClass
+{
+
+}
+typeof(MyStaticClass).IsStatic()  //true
+
+```
+
+## Check record class
+``` C#
+public record MyEmptyRecord
+{
+
+}
+typeof(MyEmptyRecord).IsRecordClass()  //true
+
+```
+
+## Check anonymous class
+``` C#
+// Create an anonymous type.
+var anonType = new
+{
+    Name = "Bill",
+    Age = 30
+};
+var type = anonType.GetType();
+var result = type.IsAnonymous(); //true
+
+```
+
+Lot more...

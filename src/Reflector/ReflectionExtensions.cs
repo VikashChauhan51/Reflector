@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Reflector;
 
@@ -540,6 +541,57 @@ public static class ReflectionExtensions
         return type?.GetFields(BindingFlags.Public | BindingFlags.Instance).Where(f => f.FieldType == fieldType);
     }
 
+    public static bool IsRecordClass(this Type type)
+    {
+        return type != null && type.IsClass &&
+            type.GetMethod("ToString").GetCustomAttributes(false).Any(a => a.GetType() == typeof(CompilerGeneratedAttribute)) &&
+            type.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance).Any(property => property.Name.Contains("EqualityContract"));
+    }
+
+    public static bool IsRecordStruct(this Type type)
+    {
+        return type != null && type.IsStruct() && type.GetMethod("ToString").GetCustomAttributes(false).Any(a => a.GetType() == typeof(CompilerGeneratedAttribute));
+    }
+
+    public static bool IsRecord(this Type type)
+    {
+        return type != null && (type.IsRecordClass() || type.IsRecordStruct());
+    }
+    public static bool IsStruct(this Type type)
+    {
+        return type != null && type.IsValueType && !type.IsPrimitive && !type.IsEnum;
+    }
+    public static IEnumerable<Type> GetParentTypesExceptDefault(this Type type)
+    {
+        if (type == null)
+            return Enumerable.Empty<Type>();
+
+        return type.GetParentTypes().Where(p => p != typeof(object) || p != typeof(ValueType));
+    }
+    public static IEnumerable<Type> GetDirectImplementedInterfaces(this Type type)
+    {
+        if (type == null)
+            return Enumerable.Empty<Type>();
+
+        Type[] allInterfaces = type.GetInterfaces();
+        Type[] inheritedInterfaces = type.BaseType?.GetInterfaces() ?? Array.Empty<Type>();
+        return allInterfaces.Except(inheritedInterfaces).ToList();
+
+    }
+    public static bool IsStatic(this Type type)
+    {
+        return type != null && type.IsAbstract && type.IsSealed;
+    }
+    public static bool IsAnonymous(this Type type)
+    {
+        return type != null &&
+            type.GetCustomAttributes(false).Any(a => a.GetType() == typeof(CompilerGeneratedAttribute)) &&
+            type.Name.StartsWith("<>f__AnonymousType");
+    }
+    public static ConstructorInfo[]? GetPublicAndProtectedInstanceConstructors(this Type type)
+    {
+        return type?.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.Where(c => c.IsPublic || c.IsFamily).ToArray();
+    }
 }
 
 

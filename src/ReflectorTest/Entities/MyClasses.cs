@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ReflectorTest.Entities;
 
-    internal class MyClasses
-    {
-    }
+internal class MyClasses
+{
+}
 internal class PropertiesAndFieldsClass
 {
     public int MyIntProperty { get; set; }
@@ -52,7 +52,7 @@ internal class PropertiesAndFieldsClass
     internal int MyInternalIntField;
     internal string MyInternalStringField = string.Empty;
 
-    public const int MyConstIntField=10;
+    public const int MyConstIntField = 10;
     public const string MyConstStringField = "Empty";
 
     public readonly int MyReadonlyIntField;
@@ -65,3 +65,22 @@ internal class PropertiesAndFieldsClass
     public static readonly string MyStaticReadonlyStringField = string.Empty;
 }
 
+public record MyEmptyRecord
+{
+
+}
+
+public record MyRecord();
+
+public record struct MyEmptyRecordStruct
+{
+
+}
+public record struct MyRecordStruct();
+
+public record MyRecord2(string Name);
+
+public static class MyStaticClass
+{
+
+}
