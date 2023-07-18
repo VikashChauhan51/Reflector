@@ -4,6 +4,7 @@ using ReflectorTest.Entities;
 using System.Reflection;
 using Reflector;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace ReflectorTest;
 
@@ -189,11 +190,11 @@ public class ReflectorTest
     [TestCase(typeof(object), ExpectedResult = true)]
     [TestCase(null, ExpectedResult = false)]
     [TestCase(typeof(ImmutableUser), ExpectedResult = false)]
-    [TestCase(typeof(D), ExpectedResult = true)]
-    [TestCase(typeof(A), ExpectedResult = true)]
-    [TestCase(typeof(MutableUser), ExpectedResult = true)]
+    [TestCase(typeof(D), ExpectedResult = false)]
+    [TestCase(typeof(A), ExpectedResult = false)]
+    [TestCase(typeof(MutableUser), ExpectedResult = false)]
     [TestCase(typeof(ABCD), ExpectedResult = false)]
-    [TestCase(typeof(XYZ), ExpectedResult = true)]
+    [TestCase(typeof(XYZ), ExpectedResult = false)]
     [TestCase(typeof(IXYZ), ExpectedResult = true)]
     public bool IsDeepMutable_ReturnsExpectedResult(Type type)
     {
@@ -205,10 +206,10 @@ public class ReflectorTest
     [TestCase(typeof(object), ExpectedResult = true)]
     [TestCase(typeof(ImmutableUser), ExpectedResult = false)]
     [TestCase(typeof(D), ExpectedResult = false)]
-    [TestCase(typeof(A), ExpectedResult = true)]
-    [TestCase(typeof(MutableUser), ExpectedResult = true)]
+    [TestCase(typeof(A), ExpectedResult = false)]
+    [TestCase(typeof(MutableUser), ExpectedResult = false)]
     [TestCase(typeof(ABCD), ExpectedResult = false)]
-    [TestCase(typeof(XYZ), ExpectedResult = true)]
+    [TestCase(typeof(XYZ), ExpectedResult = false)]
     [TestCase(typeof(IXYZ), ExpectedResult = true)]
     public bool IsMutable_ReturnsExpectedResult(Type type)
     {
@@ -315,4 +316,109 @@ public class ReflectorTest
     {
         return type.IsReadonlyStruct();
     }
+
+    [TestCase(typeof(PublicClass), ExpectedResult = "public")]
+    [TestCase(typeof(ABA), ExpectedResult = "private")]
+    [TestCase(typeof(PrivateClass), ExpectedResult = "private")]
+    [TestCase(typeof(InternalClass), ExpectedResult = "internal")]
+    [TestCase(typeof(ProtectedClass), ExpectedResult = "protected")]
+    [TestCase(typeof(ProtectedInternalClass), ExpectedResult = "protected internal")]
+    [TestCase(typeof(PrivateProtectedClass), ExpectedResult = "private protected")]
+    [TestCase(typeof(XYZ), ExpectedResult = "internal")]
+    [TestCase(typeof(string[]), ExpectedResult = "")]
+    [TestCase(typeof(List<string>), ExpectedResult = "public")]
+    [TestCase(typeof(string), ExpectedResult = "")]
+    [TestCase(typeof(int), ExpectedResult = "")]
+    [TestCase(typeof(object), ExpectedResult = "")]
+    [TestCase(typeof(Guid), ExpectedResult = "")]
+    [TestCase(typeof(UIntPtr), ExpectedResult = "")]
+    [TestCase(typeof(String), ExpectedResult = "")]
+    [TestCase(typeof(DateTimeOffset), ExpectedResult = "")]
+    [TestCase(typeof(DateTime), ExpectedResult = "")]
+    [TestCase(typeof(DateOnly), ExpectedResult = "")]
+    [TestCase(typeof(TimeOnly), ExpectedResult = "")]
+    [TestCase(typeof(TimeSpan), ExpectedResult = "")]
+    [TestCase(typeof(Char), ExpectedResult = "")]
+    [TestCase(typeof(char), ExpectedResult = "")]
+    [TestCase(typeof(Boolean), ExpectedResult = "")]
+    [TestCase(typeof(Double), ExpectedResult = "")]
+    [TestCase(typeof(UInt32), ExpectedResult = "")]
+    [TestCase(typeof(Single), ExpectedResult = "")]
+    [TestCase(typeof(ValueType), ExpectedResult = "")]
+    public string Test_GetAccessModifier(Type type)
+    {
+        return type.GetAccessModifier();
+    }
+
+    [TestCase(typeof(string[]), ExpectedResult = "")]
+    [TestCase(typeof(List<string>), ExpectedResult = "class ")]
+    [TestCase(typeof(string), ExpectedResult = "")]
+    [TestCase(typeof(int), ExpectedResult = "")]
+    [TestCase(typeof(object), ExpectedResult = "")]
+    [TestCase(typeof(Guid), ExpectedResult = "")]
+    [TestCase(typeof(UIntPtr), ExpectedResult = "")]
+    [TestCase(typeof(String), ExpectedResult = "")]
+    [TestCase(typeof(DateTimeOffset), ExpectedResult = "")]
+    [TestCase(typeof(DateTime), ExpectedResult = "")]
+    [TestCase(typeof(DateOnly), ExpectedResult = "")]
+    [TestCase(typeof(TimeOnly), ExpectedResult = "")]
+    [TestCase(typeof(TimeSpan), ExpectedResult = "")]
+    [TestCase(typeof(Char), ExpectedResult = "")]
+    [TestCase(typeof(char), ExpectedResult = "")]
+    [TestCase(typeof(Boolean), ExpectedResult = "")]
+    [TestCase(typeof(Double), ExpectedResult = "")]
+    [TestCase(typeof(UInt32), ExpectedResult = "")]
+    [TestCase(typeof(Single), ExpectedResult = "")]
+    [TestCase(typeof(ValueType), ExpectedResult = "")]
+    [TestCase(typeof(SampleRecord), ExpectedResult = "readonly record struct ")]
+    [TestCase(typeof(Sample), ExpectedResult = "readonly struct ")]
+    [TestCase(typeof(MyEmptyRecordStruct), ExpectedResult = "record struct ")]
+    [TestCase(typeof(MyStaticClass), ExpectedResult = "static class ")]
+    [TestCase(typeof(MyRecordAndClass), ExpectedResult = "record ")]
+    [TestCase(typeof(MyRecord), ExpectedResult = "record ")]
+    [TestCase(typeof(MyRecordAb), ExpectedResult = "abstract record ")]
+    [TestCase(typeof(MyRecordSealed), ExpectedResult = "sealed record ")]
+    [TestCase(typeof(MyClasses), ExpectedResult = "class ")]
+    [TestCase(typeof(MyClassesAb), ExpectedResult = "abstract class ")]
+    [TestCase(typeof(MyClassesSealed), ExpectedResult = "sealed class ")]
+
+    public string Test_GetTypeModifiers(Type type)
+    {
+        return type.GetTypeModifiers();
+    }
+
+
+    public class PublicClass
+    {
+    }
+
+    private class PrivateClass
+    {
+    }
+
+    internal class InternalClass
+    {
+    }
+
+    protected class ProtectedClass
+    {
+    }
+
+    protected internal class ProtectedInternalClass
+    {
+    }
+
+    private protected class PrivateProtectedClass
+    {
+    }
+
+    class ABA
+    {
+
+    }
+}
+
+class XYZ
+{
+
 }

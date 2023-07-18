@@ -89,6 +89,9 @@ public static class ReflectionExtensions
                     ,typeof(UInt32)
                     ,typeof(UInt64)
                     ,typeof(UIntPtr)
+                    ,typeof(Guid)
+                    ,typeof(DateOnly)
+                    ,typeof(TimeOnly)
                }.Contains(type)
             || Convert.GetTypeCode(type) != TypeCode.Object);
     }
@@ -368,7 +371,7 @@ public static class ReflectionExtensions
         if (type == typeof(object))
             return true;
 
-        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Any(p => SetIsAllowed(p, checkNonPublicSetter: true)) ||
+        return type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Any(p => SetIsAllowed(p, checkNonPublicSetter: false)) ||
                 type.GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static).Where(f => !f.IsInitOnly).Any();
     }
 
@@ -711,6 +714,65 @@ public static class ReflectionExtensions
     public static bool IsConstant(this FieldInfo field)
     {
         return field != null && field.IsLiteral;
+    }
+
+    public static string GetAccessModifier(this Type type)
+    {
+        if (type == null ||
+            type.IsArray ||
+            type.IsPrimitive ||
+            type == typeof(string) ||
+            type == typeof(object) ||
+            type == typeof(ValueType) ||
+            type.IsPrimitive())
+        {
+            return string.Empty;
+        }
+        return type switch
+        {
+            _ when type.IsPublic => "public",
+            _ when type.IsNestedPublic => "public",
+            _ when type.IsNestedPrivate => "private",
+            _ when type.IsNestedFamily => "protected",
+            _ when type.IsNestedAssembly => "internal",
+            _ when type.IsNestedFamANDAssem => "private protected",
+            _ when type.IsNestedFamORAssem => "protected internal",
+            _ when type.IsNotPublic => "internal",
+            _ => string.Empty
+        };
+    }
+
+
+    public static string GetTypeModifiers(this Type type)
+    {
+        if (type == null ||
+            type.IsArray ||
+            type.IsPrimitive ||
+            type == typeof(string) ||
+            type == typeof(object) ||
+            type == typeof(ValueType) ||
+            type.IsPrimitive())
+        {
+            return string.Empty;
+        }
+
+        return type switch
+        {
+            _ when type.IsArray && type.IsInterface => "interface ",
+            _ when type.IsAbstract && type.IsRecordClass() => "abstract record ",
+            _ when type.IsSealed && type.IsRecordClass() => "sealed record ",
+            _ when type.IsAbstract && type.IsSealed => "static class ",
+            _ when type.IsAbstract && !type.IsSealed && !type.IsRecordClass() => "abstract class ",
+            _ when type.IsSealed && type.IsClass && !type.IsRecordClass() => "sealed class ",
+            _ when type.IsEnum => "enum ",
+            _ when type.IsReadonlyStruct() && type.IsRecordStruct() => "readonly record struct ",
+            _ when type.IsReadonlyStruct() && !type.IsRecordStruct() => "readonly struct ",
+            _ when type.IsRecordStruct() => "record struct ",
+            _ when type.IsStruct() => "struct ",
+            _ when type.IsRecordClass() => "record ",
+            _ when type.IsClass => "class ",
+            _ => string.Empty
+        };
     }
 }
 

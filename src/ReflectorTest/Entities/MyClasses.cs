@@ -9,6 +9,12 @@ namespace ReflectorTest.Entities;
 internal class MyClasses
 {
 }
+internal abstract class MyClassesAb
+{
+}
+internal sealed class MyClassesSealed
+{
+}
 internal class PropertiesAndFieldsClass
 {
     public int MyIntProperty { get; set; }
@@ -71,7 +77,9 @@ public record MyEmptyRecord
 }
 
 public record MyRecord();
-
+public record class MyRecordAndClass();
+public abstract record MyRecordAb();
+public sealed record MyRecordSealed();
 public record struct MyEmptyRecordStruct
 {
 
@@ -95,3 +103,6 @@ public readonly record struct SampleRecord
 {
 
 }
+
+
+
