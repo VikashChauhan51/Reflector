@@ -84,3 +84,14 @@ public static class MyStaticClass
 {
 
 }
+
+
+public readonly struct Sample
+{
+
+}
+
+public readonly record struct SampleRecord
+{
+
+}

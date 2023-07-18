@@ -298,4 +298,21 @@ public class ReflectorTest
     {
         return type.IsStatic();
     }
+
+    [TestCase(typeof(Person), ExpectedResult = false)]
+    [TestCase(typeof(object), ExpectedResult = false)]
+    [TestCase(typeof(ImmutableUser), ExpectedResult = false)]
+    [TestCase(typeof(IXYZ), ExpectedResult = false)]
+    [TestCase(typeof(MyEmptyRecord), ExpectedResult = false)]
+    [TestCase(typeof(MyRecord), ExpectedResult = false)]
+    [TestCase(typeof(MyEmptyRecordStruct), ExpectedResult = false)]
+    [TestCase(typeof(MyRecordStruct), ExpectedResult = false)]
+    [TestCase(typeof(MyRecord2), ExpectedResult = false)]
+    [TestCase(typeof(MyStaticClass), ExpectedResult = false)]
+    [TestCase(typeof(Sample), ExpectedResult = true)]
+    [TestCase(typeof(SampleRecord), ExpectedResult = true)]
+    public bool Test_Is_Readonly_Struct(Type type)
+    {
+        return type.IsReadonlyStruct();
+    }
 }

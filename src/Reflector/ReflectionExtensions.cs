@@ -592,6 +592,11 @@ public static class ReflectionExtensions
     {
         return type?.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)?.Where(c => c.IsPublic || c.IsFamily).ToArray();
     }
+
+    public static bool IsReadonlyStruct(this Type type)
+    {
+        return type != null && type.IsStruct() && type.GetCustomAttributes().Any(a => a.GetType() == typeof(IsReadOnlyAttribute));
+    }
 }
 
 
