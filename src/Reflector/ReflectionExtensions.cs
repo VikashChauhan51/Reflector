@@ -282,7 +282,7 @@ public static class ReflectionExtensions
         return false;
     }
 
-    public static bool IsNullable(Type? type) => type is null || type.IsClass || Nullable.GetUnderlyingType(type) != null;
+    public static bool IsNullable(this Type? type) => type is null || type.IsClass || Nullable.GetUnderlyingType(type) != null;
     public static Type? GetType(object obj) => obj?.GetType();
 
     public static ConstructorInfo[]? GetAllConstructors(this Type type)
@@ -586,7 +586,7 @@ public static class ReflectionExtensions
     {
         return type != null &&
             type.GetCustomAttributes(false).Any(a => a.GetType() == typeof(CompilerGeneratedAttribute)) &&
-            type.Name.StartsWith("<>f__AnonymousType");
+            type.Name.StartsWith("<>");
     }
     public static ConstructorInfo[]? GetPublicAndProtectedInstanceConstructors(this Type type)
     {
@@ -596,6 +596,121 @@ public static class ReflectionExtensions
     public static bool IsReadonlyStruct(this Type type)
     {
         return type != null && type.IsStruct() && type.GetCustomAttributes().Any(a => a.GetType() == typeof(IsReadOnlyAttribute));
+    }
+
+    public static GenericParameterAttributes GetConstraints(this Type type)
+    {
+        if (type == null || !type.IsGenericParameter)
+        {
+            return GenericParameterAttributes.None;
+        }
+
+        return type.GenericParameterAttributes;
+    }
+
+    public static Type[] GetConstraintTypes(this Type type)
+    {
+        if (type == null || !type.IsGenericParameter)
+        {
+            return Array.Empty<Type>();
+        }
+
+        return type.GetGenericParameterConstraints();
+    }
+    public static bool IsDerivedFrom(this Type childType, Type parentType)
+    {
+        return childType != null && parentType != null && childType.IsSubclassOf(parentType);
+    }
+
+    public static bool IsClosedTypeOf(this Type type, Type genericTypeDefinition)
+    {
+        return type != null && genericTypeDefinition != null && type.IsGenericType && type.GetGenericTypeDefinition() == genericTypeDefinition;
+    }
+
+    public static bool IsEnumerable(this Type type)
+    {
+        return type.IsArray || (type != typeof(string) && IsAssignableTo(type, typeof(System.Collections.IEnumerable)));
+    }
+
+    public static bool IsAssignableTo(this Type assignableType, Type type)
+    {
+        return type?.IsAssignableFrom(assignableType) ?? false;
+    }
+    public static bool HasAttribute<TAttribute>(this Type type) where TAttribute : Attribute
+    {
+        return type != null && Attribute.IsDefined(type, typeof(TAttribute), inherit: false);
+    }
+
+    public static bool CanBeNull(this Type type)
+    {
+        if (type == null) return true;
+
+        if (!type.IsGenericParameter)
+        {
+            return type.IsClass || type.IsInterface || type.IsNullable();
+        }
+
+        GenericParameterAttributes constraints = type.GetConstraints();
+        if ((constraints & GenericParameterAttributes.ReferenceTypeConstraint) == GenericParameterAttributes.ReferenceTypeConstraint)
+        {
+            return true;
+        }
+
+        if ((constraints & GenericParameterAttributes.NotNullableValueTypeConstraint) == GenericParameterAttributes.NotNullableValueTypeConstraint)
+        {
+            return false;
+        }
+
+        return type.GetConstraintTypes().Any((Type t) => t.CanBeNull());
+    }
+
+    public static bool IsSafePublic(this Type type)
+    {
+        return type != null && type.IsPublic;
+    }
+
+    public static bool IsSafeClass(this Type type)
+    {
+        return type != null && type.IsClass;
+    }
+
+    public static bool IsSafeInterface(this Type type)
+    {
+        return type != null && type.IsInterface;
+    }
+
+    public static bool IsSafeAbstract(this Type type)
+    {
+        return type != null && type.IsAbstract;
+    }
+
+    public static bool IsSafeSealed(this Type type)
+    {
+        return type != null && type.IsSealed;
+    }
+
+    public static bool IsSafeEnum(this Type type)
+    {
+        return type != null && type.IsEnum;
+    }
+
+    public static bool IsSafeValueType(this Type type)
+    {
+        return type != null && type.IsValueType;
+    }
+
+    public static bool IsSafeGenericType(this Type type)
+    {
+        return type != null && type.IsGenericType;
+    }
+
+    public static bool IsReadonly(this FieldInfo field)
+    {
+        return field != null && field.IsInitOnly;
+    }
+    public static bool IsConstant(this FieldInfo field)
+    {
+        return field != null && field.IsLiteral;
     }
 }
 
