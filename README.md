@@ -144,4 +144,5 @@ var result = method.GetMethodAccessModifier(); // public
 var info = method.GetMethodModifiers();  // virtual
 
 ```
+
 Lot more...
