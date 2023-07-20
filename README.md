@@ -120,4 +120,28 @@ var result = type.IsAnonymous(); //true
 
 ```
 
+## Get Class,Enum and Struct Access modifier and modifiers
+``` C#
+// Create an anonymous type.
+protected internal abstract class PublicClass
+{
+}
+var type = typeof(PublicClass);
+var result = type.GetAccessModifier(); // protected internal
+var info = type.GetTypeModifiers();  // abstract class
+
+```
+
+## Get Method Access modifier and modifiers
+``` C#
+// Create an anonymous type.
+protected internal abstract class PublicClass
+{
+}
+var type = typeof(PublicClass);
+var method = type.GetMethod("ToString");
+var result = method.GetMethodAccessModifier(); // public
+var info = method.GetMethodModifiers();  // virtual
+
+```
 Lot more...

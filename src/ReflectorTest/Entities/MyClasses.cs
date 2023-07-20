@@ -106,3 +106,88 @@ public readonly record struct SampleRecord
 
 
 
+public abstract class PropertyTest : MyBase
+{
+    private int state;
+    public static int field;
+    protected const int fieldConst = 10;
+    internal readonly int fieldReadonly;
+    protected internal static readonly int fieldPro = 20;
+
+    public int MyProperty { get; set; }
+
+    public int MyPropertyGetOnly { get; }
+    public int MyPropertySet { set { state = value; } }
+
+    public int MyPropertyNoBacking { get { return state; } set { state = value; } }
+
+    public int MyPropertyInitOnly { get; init; }
+    public int MyPropertyLambda => state;
+
+    private int MyPropertyPrivate { get; set; }
+    protected int MyPropertyProtected { get; set; }
+    internal int MyPropertyInternal { get; set; }
+    protected internal int MyPropertyProtectedInternal { get; set; }
+
+    public static int MyPropertyStatic { get; set; }
+    public abstract int MyPropertyAbstract { get; set; }
+    public virtual int MyPropertyVirtual { get; set; }
+
+    public sealed override int MyPropertySealed { get; set; }
+
+    public sealed override void MySealed()
+    {
+
+    }
+
+    public virtual void MyVirtual()
+    {
+
+    }
+
+    public void MyMethod()
+    {
+
+    }
+    public static void MyStaticMethod()
+    {
+
+    }
+
+    protected abstract void MyAbstract();
+}
+
+public class MyBase
+{
+    public virtual int MyPropertySealed { get; set; }
+
+    public virtual void MySealed()
+    {
+
+    }
+}
+
+
+public abstract class MyBaseClass
+{
+    // Abstract event
+    public abstract event EventHandler MyEvent1;
+
+    // Virtual event
+    public virtual event EventHandler MyEvent2;
+}
+
+public class MyDerivedClass : MyBaseClass
+{
+    // Override abstract event
+    public override event EventHandler MyEvent1;
+
+    public static event EventHandler MyEvent3;
+    // Override and seal virtual event
+    public sealed override event EventHandler MyEvent2;
+
+    private event EventHandler MyEvent4;
+    protected event EventHandler MyEvent5;
+    protected internal event EventHandler MyEvent6;
+    internal event EventHandler MyEvent7;
+}

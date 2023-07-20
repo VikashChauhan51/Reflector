@@ -387,6 +387,115 @@ public class ReflectorTest
         return type.GetTypeModifiers();
     }
 
+    [TestCase("MyProperty", ExpectedResult = "public")]
+    [TestCase("MyPropertyGetOnly", ExpectedResult = "public")]
+    [TestCase("MyPropertySet", ExpectedResult = "public")]
+    [TestCase("MyPropertyNoBacking", ExpectedResult = "public")]
+    [TestCase("MyPropertyInitOnly", ExpectedResult = "public")]
+    [TestCase("MyPropertyLambda", ExpectedResult = "public")]
+    [TestCase("MyPropertyPrivate", ExpectedResult = "private")]
+    [TestCase("MyPropertyProtected", ExpectedResult = "protected")]
+    [TestCase("MyPropertyInternal", ExpectedResult = "internal")]
+    [TestCase("MyPropertyProtectedInternal", ExpectedResult = "protected internal")]
+    [TestCase("MyPropertyStatic", ExpectedResult = "public")]
+    [TestCase("MyPropertyAbstract", ExpectedResult = "public")]
+    [TestCase("MyPropertyVirtual", ExpectedResult = "public")]
+    [TestCase("MyPropertySealed", ExpectedResult = "public")]
+    public string Test_GetPropertyAccessModifier(string name)
+    {
+        var type = typeof(PropertyTest);
+        var property = type.GetProperty(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return property.GetPropertyAccessModifier();
+
+    }
+
+    [TestCase("MyProperty", ExpectedResult = "")]
+    [TestCase("MyPropertyGetOnly", ExpectedResult = "")]
+    [TestCase("MyPropertySet", ExpectedResult = "")]
+    [TestCase("MyPropertyNoBacking", ExpectedResult = "")]
+    [TestCase("MyPropertyInitOnly", ExpectedResult = "")]
+    [TestCase("MyPropertyLambda", ExpectedResult = "")]
+    [TestCase("MyPropertyPrivate", ExpectedResult = "")]
+    [TestCase("MyPropertyProtected", ExpectedResult = "")]
+    [TestCase("MyPropertyInternal", ExpectedResult = "")]
+    [TestCase("MyPropertyProtectedInternal", ExpectedResult = "")]
+    [TestCase("MyPropertyStatic", ExpectedResult = "static")]
+    [TestCase("MyPropertyAbstract", ExpectedResult = "abstract")]
+    [TestCase("MyPropertyVirtual", ExpectedResult = "virtual")]
+    [TestCase("MyPropertySealed", ExpectedResult = "sealed override")]
+    public string Test_GetPropertyModifiers(string name)
+    {
+        var type = typeof(PropertyTest);
+        var property = type.GetProperty(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return property.GetPropertyModifiers();
+
+    }
+
+
+    [TestCase("state", ExpectedResult = "private")]
+    [TestCase("field", ExpectedResult = "public")]
+    [TestCase("fieldConst", ExpectedResult = "protected")]
+    [TestCase("fieldReadonly", ExpectedResult = "internal")]
+    [TestCase("fieldPro", ExpectedResult = "protected internal")]
+    public string Test_GetFieldAccessModifier(string name)
+    {
+        var type = typeof(PropertyTest);
+        var field = type.GetField(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return field.GetFieldAccessModifier();
+
+    }
+
+
+    [TestCase("field", ExpectedResult = "static")]
+    [TestCase("fieldConst", ExpectedResult = "const")]
+    [TestCase("fieldReadonly", ExpectedResult = "readonly")]
+    [TestCase("fieldPro", ExpectedResult = "static readonly")]
+    public string Test_GetFieldModifiers(string name)
+    {
+        var type = typeof(PropertyTest);
+        var field = type.GetField(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return field.GetFieldModifiers();
+
+    }
+
+
+    [TestCase("MyStaticMethod", ExpectedResult = "static")]
+    [TestCase("MyAbstract", ExpectedResult = "abstract")]
+    [TestCase("MyVirtual", ExpectedResult = "virtual")]
+    [TestCase("MySealed", ExpectedResult = "sealed override")]
+    [TestCase("MyMethod", ExpectedResult = "")]
+    public string Test_GetMethodModifiers(string name)
+    {
+        var type = typeof(PropertyTest);
+        var method = type.GetMethod(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return method.GetMethodModifiers();
+
+    }
+
+
+    [TestCase("MyEvent1", ExpectedResult = "public")]
+    [TestCase("MyEvent4", ExpectedResult = "private")]
+    [TestCase("MyEvent5", ExpectedResult = "protected")]
+    [TestCase("MyEvent6", ExpectedResult = "protected internal")]
+    [TestCase("MyEvent7", ExpectedResult = "internal")]
+    public string Test_GetEventAccessModifier(string name)
+    {
+        var type = typeof(MyDerivedClass);
+        var evnt = type.GetEvent(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return evnt.GetEventAccessModifier();
+
+    }
+    [TestCase("MyEvent4", ExpectedResult = "")]
+    [TestCase("MyEvent3", ExpectedResult = "static")]
+    [TestCase("MyEvent2", ExpectedResult = "sealed override")]
+    [TestCase("MyEvent1", ExpectedResult = "virtual")]
+    public string Test_GetEventModifiers(string name)
+    {
+        var type = typeof(MyDerivedClass);
+        var evnt = type.GetEvent(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return evnt.GetEventModifiers();
+
+    }
 
     public class PublicClass
     {

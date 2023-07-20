@@ -774,6 +774,81 @@ public static class ReflectionExtensions
             _ => string.Empty
         };
     }
+
+    public static string GetMethodAccessModifier(this MethodInfo method)
+    {
+        return method switch
+        {
+            _ when method.IsPrivate => "private",
+            _ when method.IsPublic => "public",
+            _ when method.IsFamily => "protected",
+            _ when method.IsFamilyOrAssembly => "protected internal",
+            _ when method.IsAssembly => "internal",
+            _ => string.Empty
+        };
+    }
+
+    public static string GetMethodModifiers(this MethodInfo method)
+    {
+        return method switch
+        {
+            _ when method.IsStatic => "static",
+            _ when method.IsFinal => "sealed override",
+            _ when method.IsAbstract => "abstract",
+            _ when method.IsVirtual => "virtual",
+            _ => string.Empty
+        };
+    }
+
+    public static string GetFieldAccessModifier(this FieldInfo field)
+    {
+        return field switch
+        {
+            _ when field.IsPrivate => "private",
+            _ when field.IsPublic => "public",
+            _ when field.IsFamily => "protected",
+            _ when field.IsFamilyOrAssembly => "protected internal",
+            _ when field.IsAssembly => "internal",
+            _ => string.Empty
+        };
+    }
+
+    public static string GetFieldModifiers(this FieldInfo field)
+    {
+        return field switch
+        {
+            _ when field.IsInitOnly && field.IsStatic => "static readonly",
+            _ when field.IsInitOnly => "readonly",
+            _ when field.IsLiteral => "const",
+            _ when field.IsStatic => "static",
+            _ => string.Empty
+        };
+    }
+
+    public static string GetPropertyAccessModifier(this PropertyInfo property)
+    {
+        var method = property?.GetMethod ?? property?.SetMethod;
+        return method?.GetMethodAccessModifier() ?? string.Empty;
+    }
+
+    public static string GetPropertyModifiers(this PropertyInfo property)
+    {
+        var method = property?.GetMethod ?? property?.SetMethod;
+        return method?.GetMethodModifiers() ?? string.Empty;
+    }
+
+    public static string GetEventAccessModifier(this EventInfo @event)
+    {
+        var method = @event?.GetAddMethod() ?? @event?.GetRemoveMethod(true);
+        return method?.GetMethodAccessModifier() ?? string.Empty;
+    }
+
+    public static string GetEventModifiers(this EventInfo @event)
+    {
+        var method = @event?.GetAddMethod() ?? @event?.GetRemoveMethod(true);
+        return  method?.GetMethodModifiers() ?? string.Empty;
+    }
+
 }
 
 
