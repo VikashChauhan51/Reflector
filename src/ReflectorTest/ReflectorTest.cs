@@ -497,6 +497,35 @@ public class ReflectorTest
 
     }
 
+    [TestCase(true, ExpectedResult = "public")]
+    [TestCase(false, ExpectedResult = "private")]
+    public string Test_Get_ConstructorAccessModifier(bool isPublic)
+    {
+        var type = typeof(MyConstructorClass);
+        var ctor = type.GetAllConstructors().First(x => x.IsPublic == isPublic && x.IsPrivate == !isPublic);
+        return ctor.GetConstructorAccessModifier();
+
+    }
+
+    [Test]
+    public void Test_Get_Protected_ConstructorAccessModifier()
+    {
+        var type = typeof(MyConstructorClass);
+        var ctor = type.GetAllConstructors().First(x => x.IsFamily);
+        var result= ctor.GetConstructorAccessModifier();
+        Assert.AreEqual("protected", result);
+    }
+
+    [Test]
+    public void Test_Static_GetConstructorModifiers()
+    {
+        var type = typeof(MyConstructorClass);
+        var ctor = type.GetAllConstructors().First(c => c.IsStatic);
+        var result = ctor.GetConstructorModifiers();
+
+        Assert.AreEqual("static", result);
+    }
+
     public class PublicClass
     {
     }

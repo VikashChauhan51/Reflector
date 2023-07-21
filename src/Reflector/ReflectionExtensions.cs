@@ -781,8 +781,8 @@ public static class ReflectionExtensions
         {
             _ when method.IsPrivate => "private",
             _ when method.IsPublic => "public",
-            _ when method.IsFamily => "protected",
             _ when method.IsFamilyOrAssembly => "protected internal",
+            _ when method.IsFamily => "protected",
             _ when method.IsAssembly => "internal",
             _ => string.Empty
         };
@@ -806,8 +806,8 @@ public static class ReflectionExtensions
         {
             _ when field.IsPrivate => "private",
             _ when field.IsPublic => "public",
-            _ when field.IsFamily => "protected",
             _ when field.IsFamilyOrAssembly => "protected internal",
+            _ when field.IsFamily => "protected",
             _ when field.IsAssembly => "internal",
             _ => string.Empty
         };
@@ -846,9 +846,30 @@ public static class ReflectionExtensions
     public static string GetEventModifiers(this EventInfo @event)
     {
         var method = @event?.GetAddMethod() ?? @event?.GetRemoveMethod(true);
-        return  method?.GetMethodModifiers() ?? string.Empty;
+        return method?.GetMethodModifiers() ?? string.Empty;
     }
 
+    public static string GetConstructorAccessModifier(this ConstructorInfo constructor)
+    {
+        return constructor switch
+        {
+            _ when constructor.IsPrivate => "private",
+            _ when constructor.IsPublic => "public",
+            _ when constructor.IsFamilyOrAssembly => "protected internal",
+            _ when constructor.IsFamily => "protected",
+            _ when constructor.IsAssembly => "internal",
+            _ => string.Empty
+        };
+    }
+
+    public static string GetConstructorModifiers(this ConstructorInfo constructor)
+    {
+        return constructor switch
+        {
+            _ when constructor.IsStatic => "static",
+            _ => string.Empty
+        };
+    }
 }
 
 

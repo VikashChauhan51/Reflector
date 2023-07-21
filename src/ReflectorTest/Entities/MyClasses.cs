@@ -191,3 +191,35 @@ public class MyDerivedClass : MyBaseClass
     protected internal event EventHandler MyEvent6;
     internal event EventHandler MyEvent7;
 }
+
+
+public class MyConstructorClass
+{
+    public MyConstructorClass()
+    {
+
+    }
+
+    private MyConstructorClass(int age)
+    {
+
+    }
+    static MyConstructorClass()
+    {
+
+    }
+
+    protected MyConstructorClass(string name)
+    {
+
+    }
+
+    protected internal MyConstructorClass(string name, int age)
+    {
+
+    }
+    internal MyConstructorClass(string name, int age, int data)
+    {
+
+    }
+}
