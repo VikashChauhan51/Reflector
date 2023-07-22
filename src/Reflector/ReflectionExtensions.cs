@@ -17,7 +17,6 @@ public static class ReflectionExtensions
 
     #region Public
 
-
     public static IEnumerable<Type> GetParentTypes(this Type type)
     {
         // is there any base type?
@@ -888,7 +887,7 @@ public static class ReflectionExtensions
     public static string GetName(this PropertyInfo property) => GetName(property?.Name);
     public static string GetName(this FieldInfo field) => GetName(field?.Name);
     public static string GetName(this EventInfo @event) => GetName(@event?.EventHandlerType?.Name);
-    public static string GetTypeAsString(Type classOrEnumOrStructOrInterface, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
+    public static string AsString(this Type classOrEnumOrStructOrInterface, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
     {
 
         //check type is not supported
@@ -923,6 +922,95 @@ public static class ReflectionExtensions
 
         return $@"{accessSpecifier} {typeModifier}{typename}{(inheritedText.Length > 0 ? $":{inheritedText}" : "")} {(constraints.Any() ? constraintsText : "")}";
 
+    }
+    public static string AsString(this ConstructorInfo constructor, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
+    {
+        if (constructor == null) return string.Empty;
+
+        var constructorAccessSpecifier = constructor.GetConstructorAccessModifier();
+        var constructorAccessModifier = constructor.GetConstructorModifiers();
+        var name = GetName(constructor.DeclaringType?.Name);
+        var parameters = constructor.GetParameters().Select(p => GetParemeterTypeName(p, genericSepratorStartTag, genericSepratorEndTag)).ToList();
+        var parametersText = string.Join(",", parameters);
+        return $@"{constructorAccessSpecifier} {constructorAccessModifier} {name}({parametersText})";
+    }
+    public static string AsString(this MethodInfo method, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
+    {
+        if (method == null) return string.Empty;
+
+        var methodAccessSpecifier = method.GetMethodAccessModifier();
+        var methodModifier = method.GetMethodModifiers();
+        var methodReturnTypes = GetMemberReturnTypes(method.ReturnType, genericSepratorStartTag, genericSepratorEndTag);
+        var name = GetName(method.Name);
+        var parameters = method.GetParameters().Select(p => GetParemeterTypeName(p, genericSepratorStartTag, genericSepratorEndTag)).ToList();
+        var parametersText = string.Join(",", parameters);
+        var constraints = GetMethodConstraints(method);
+        var constraintsText = string.Join(" ", constraints);
+        if (method.IsGenericMethod)
+        {
+            var pars = method.GetGenericArguments().Select(p => GetName(p.Name)).ToList();
+            var parmText = string.Join(",", pars);
+            return $@"{methodAccessSpecifier} {methodModifier} {methodReturnTypes} {name}{genericSepratorStartTag}{parmText}{genericSepratorEndTag}({parametersText}) {constraintsText}";
+        }
+        else
+        {
+            return $@"{methodAccessSpecifier} {methodModifier} {methodReturnTypes} {name}({parametersText})";
+        }
+    }
+    public static string AsString(this PropertyInfo property, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
+    {
+        if (property == null) return string.Empty;
+
+        var propertyAccessSpecifier = property.GetPropertyAccessModifier();
+        var propertyModifier = property.GetPropertyModifiers();
+        var propertyReturnTypes = GetMemberReturnTypes(property.PropertyType, genericSepratorStartTag, genericSepratorEndTag);
+        var name = GetName(property.Name);
+        var getText = property.CanRead ? $"get;" : "";
+        var setText = string.Empty;
+        if (property.SetIsAllowed())
+        {
+            setText = $@"set;";
+        }
+        else if (property.SetIsAllowed(checkInitSetter: true))
+        {
+            setText = $@"init;";
+        }
+        var propertGeterSetter = $"{{{getText}{setText}}}";
+        return $@"{propertyAccessSpecifier} {propertyModifier} {propertyReturnTypes} {name}{propertGeterSetter}";
+    }
+    public static string AsString(this FieldInfo field, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
+    {
+        if (field == null) return string.Empty;
+
+        var fieldAccessSpecifier = field.GetFieldAccessModifier();
+        var fieldModifier = field.GetFieldModifiers();
+        var fieldReturnTypes = GetMemberReturnTypes(field.FieldType, genericSepratorStartTag, genericSepratorEndTag);
+        var name = GetName(field.Name);
+        return $@"{fieldAccessSpecifier} {fieldModifier} {fieldReturnTypes} {name}";
+    }
+    public static string AsString(EventInfo @event, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
+    {
+        if (@event == null) return string.Empty;
+
+        var eventAccessSpecifier = @event.GetEventAccessModifier();
+        var eventModifier = @event.GetEventModifiers();
+        var eventReturnTypes = GetMemberReturnTypes(@event.EventHandlerType, genericSepratorStartTag, genericSepratorEndTag);
+        var name = GetName(@event.Name);
+        return $@"{eventAccessSpecifier} {eventModifier} {eventReturnTypes} {name}";
+    }
+    public static string NameAsString(this Type classOrEnumOrStructOrInterface, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
+    {
+        //check type is not supported
+        if (classOrEnumOrStructOrInterface is null ||
+            classOrEnumOrStructOrInterface.IsPrimitive() ||
+            !(classOrEnumOrStructOrInterface.IsClass ||
+            classOrEnumOrStructOrInterface.IsEnum ||
+            classOrEnumOrStructOrInterface.IsInterface ||
+            classOrEnumOrStructOrInterface.IsValueType))
+        {
+            return string.Empty;
+        }
+        return GetTypeName(classOrEnumOrStructOrInterface, genericSepratorStartTag, genericSepratorEndTag);
     }
     #endregion Public
 
@@ -981,7 +1069,7 @@ public static class ReflectionExtensions
             var returnParmText = string.Join(",", returnParms);
             if (!string.IsNullOrEmpty(returnParmText))
             {
-                return $"{name}{genericSepratorStartTag}{returnParmText}{genericSepratorEndTag}[] {pName}";
+                return $"{name.Split("[]")[0]}{genericSepratorStartTag}{returnParmText}{genericSepratorEndTag}[] {pName}";
             }
         }
         return $"{name} {pName}";
@@ -1049,6 +1137,34 @@ public static class ReflectionExtensions
         }
 
         return parmData;
+    }
+    private static string GetMemberReturnTypes(Type type, string genericSepratorStartTag, string genericSepratorEndTag)
+    {
+        var name = GetName(type.Name);
+        if (type.IsGenericType)
+        {
+            var returnParms = type.GetGenericArguments().Select(p => GetGenericTypeName(p, genericSepratorStartTag, genericSepratorEndTag)).ToList();
+            var returnParmText = string.Join(",", returnParms);
+            return $"{name}{genericSepratorStartTag}{returnParmText}{genericSepratorEndTag}";
+        }
+        else if (type.IsArray || type.IsSZArray)
+        {
+            var returnParms = type.GetGenericArguments().Select(p => GetGenericTypeName(p, genericSepratorStartTag, genericSepratorEndTag)).ToList();
+            var returnParmText = string.Join(",", returnParms);
+            if (!string.IsNullOrEmpty(returnParmText))
+            {
+                return $"{name.Split("[]")[0]}{genericSepratorStartTag}{returnParmText}{genericSepratorEndTag}[]";
+            }
+            else
+            {
+                return $"{name.Split("[]")[0]}[]";
+            }
+
+        }
+        else
+        {
+            return $"{name}";
+        }
     }
     private static string GetName(string? name) => name?.Split('`')[0] ?? string.Empty;
 
