@@ -870,6 +870,15 @@ public static class ReflectionExtensions
             _ => string.Empty
         };
     }
+    public static Type GetType<T>() => typeof(T);
+    public static string GetName<T>() => GetName(nameof(T));
+    public static string GetName(this Type type) => GetName(type?.Name);
+    public static string GetName(this ConstructorInfo constructor) => GetName(constructor?.Name);
+    public static string GetName(this MethodInfo method) => GetName(method?.Name);
+    public static string GetName(this PropertyInfo property) => GetName(property?.Name);
+    public static string GetName(this FieldInfo field) => GetName(field?.Name);
+    public static string GetName(this EventInfo @event) => GetName(@event?.EventHandlerType?.Name);
+    private static string GetName(string? name) => name?.Split('`')[0] ?? string.Empty;
+
+
 }
-
-
