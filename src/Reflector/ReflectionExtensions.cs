@@ -2,11 +2,21 @@
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 namespace Reflector;
 
 public static class ReflectionExtensions
 {
+
+    #region Constants
+    const string Reference_Type = "class";
+    const string ValueType_Type = "struct";
+    const string Default_Constructor = "new()";
+    #endregion Constants
+
+    #region Public
+
 
     public static IEnumerable<Type> GetParentTypes(this Type type)
     {
@@ -878,7 +888,169 @@ public static class ReflectionExtensions
     public static string GetName(this PropertyInfo property) => GetName(property?.Name);
     public static string GetName(this FieldInfo field) => GetName(field?.Name);
     public static string GetName(this EventInfo @event) => GetName(@event?.EventHandlerType?.Name);
+    public static string GetTypeAsString(Type classOrEnumOrStructOrInterface, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
+    {
+
+        //check type is not supported
+        if (classOrEnumOrStructOrInterface is null ||
+            classOrEnumOrStructOrInterface.IsPrimitive() ||
+            !(classOrEnumOrStructOrInterface.IsClass ||
+            classOrEnumOrStructOrInterface.IsEnum ||
+            classOrEnumOrStructOrInterface.IsInterface ||
+            classOrEnumOrStructOrInterface.IsValueType))
+        {
+            return string.Empty;
+        }
+
+        var accessSpecifier = classOrEnumOrStructOrInterface.GetAccessModifier();
+        var typeModifier = classOrEnumOrStructOrInterface.GetTypeModifiers();
+        var typename = GetTypeName(classOrEnumOrStructOrInterface, genericSepratorStartTag, genericSepratorEndTag);
+        var inhereted = new List<string>();
+        if (classOrEnumOrStructOrInterface.BaseType != typeof(object) &&
+            classOrEnumOrStructOrInterface.BaseType != typeof(ValueType) &&
+            classOrEnumOrStructOrInterface.BaseType != typeof(Enum))
+        {
+            inhereted.Add(GetTypeName(classOrEnumOrStructOrInterface.BaseType!, genericSepratorStartTag, genericSepratorEndTag));
+        }
+
+        foreach (var inter in classOrEnumOrStructOrInterface.GetDirectImplementedInterfaces())
+        {
+            inhereted.Add(GetTypeName(inter, genericSepratorStartTag, genericSepratorEndTag));
+        }
+        var inheritedText = string.Join(",", inhereted);
+        var constraints = GetTypeConstraints(classOrEnumOrStructOrInterface);
+        var constraintsText = string.Join(" ", constraints);
+
+        return $@"{accessSpecifier} {typeModifier}{typename}{(inheritedText.Length > 0 ? $":{inheritedText}" : "")} {(constraints.Any() ? constraintsText : "")}";
+
+    }
+    #endregion Public
+
+    #region Private Members
+    private static string GetTypeName(Type type, string genericSepratorStartTag, string genericSepratorEndTag)
+    {
+        if (type.IsGenericType)
+        {
+            var name = GetName(type.Name);
+            var parameters = type.GetGenericArguments().Select(p => GetGenericTypeName(p, genericSepratorStartTag, genericSepratorEndTag)).ToList();
+            var parmText = string.Join(",", parameters);
+            return $"{name}{genericSepratorStartTag}{parmText}{genericSepratorEndTag}";
+        }
+        return $"{type.Name}";
+    }
+    private static string GetGenericTypeName(Type type, string genericSepratorStartTag, string genericSepratorEndTag)
+    {
+        var name = GetName(type.Name);
+
+        if (type.IsGenericType)
+        {
+            var parameters = type.GetGenericArguments().Select(p => GetGenericTypeName(p, genericSepratorStartTag, genericSepratorEndTag)).ToList();
+            var parmText = string.Join(",", parameters);
+            return $"{name}{genericSepratorStartTag}{parmText}{genericSepratorEndTag}";
+        }
+
+        if (type.IsArray)
+        {
+            var returnParms = type.GetGenericArguments().Select(p => GetGenericTypeName(p, genericSepratorStartTag, genericSepratorEndTag)).ToList();
+            var returnParmText = string.Join(",", returnParms);
+            if (!string.IsNullOrEmpty(returnParmText))
+            {
+                return $"[{name}{genericSepratorStartTag}{returnParmText}{genericSepratorEndTag}]";
+            }
+            else
+            {
+                return $"{name}";
+            }
+        }
+        return $"{type.Name}";
+    }
+    private static string GetParemeterTypeName(ParameterInfo type, string genericSepratorStartTag, string genericSepratorEndTag)
+    {
+        var pName = GetName(type.Name);
+        var name = GetName(type.ParameterType.Name);
+        if (type.ParameterType.IsGenericType)
+        {
+            var parameters = type.ParameterType.GetGenericArguments().Select(p => GetGenericTypeName(p, genericSepratorStartTag, genericSepratorEndTag)).ToList();
+            var parmText = string.Join(",", parameters);
+            return $"{name}{genericSepratorStartTag}{parmText}{genericSepratorEndTag} {pName}";
+        }
+
+        if (type.ParameterType.IsArray)
+        {
+            var returnParms = type.ParameterType.GetGenericArguments().Select(p => GetGenericTypeName(p, genericSepratorStartTag, genericSepratorEndTag)).ToList();
+            var returnParmText = string.Join(",", returnParms);
+            if (!string.IsNullOrEmpty(returnParmText))
+            {
+                return $"{name}{genericSepratorStartTag}{returnParmText}{genericSepratorEndTag}[] {pName}";
+            }
+        }
+        return $"{name} {pName}";
+    }
+    private static HashSet<string> GetTypeConstraints(Type type)
+    {
+        if (type.IsGenericType)
+        {
+            var parmeters = type.GetGenericArguments();
+            GetParmetersConstraints(parmeters);
+        }
+
+        return new HashSet<string>();
+    }
+    private static HashSet<string> GetMethodConstraints(MethodInfo method)
+    {
+        if (method.IsGenericMethod)
+        {
+            var parmeters = method.GetGenericArguments();
+            return GetParmetersConstraints(parmeters);
+        }
+
+        return new HashSet<string>();
+    }
+    private static HashSet<string> GetParmetersConstraints(Type[] parmeters)
+    {
+        var parmData = new HashSet<string>();
+        foreach (var prm in parmeters)
+        {
+            if (prm.IsGenericParameter)
+            {
+                var constrains = prm.GetGenericParameterConstraints().Where(x => x != typeof(ValueType)).Select(x => x.Name).ToArray();
+                var constraintsText = string.Join(",", constrains);
+                if (constraintsText.Length > 0)
+                {
+                    //custom type as constraints
+                    parmData.Add($"where {prm.Name}:{constraintsText}");
+                }
+                else
+                {
+                    var attributes = prm.GenericParameterAttributes;
+                    // default classs constraints
+                    if ((attributes & GenericParameterAttributes.ReferenceTypeConstraint) == GenericParameterAttributes.ReferenceTypeConstraint)
+                    {
+                        if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                        {
+                            parmData.Add($"where {prm.Name}:{Reference_Type},{Default_Constructor}");
+                        }
+                        else
+                        {
+                            parmData.Add($"where {prm.Name}:{Reference_Type}");
+                        }
+                    }
+                    else if ((attributes & GenericParameterAttributes.NotNullableValueTypeConstraint) == GenericParameterAttributes.NotNullableValueTypeConstraint)
+                    {
+                        parmData.Add($"where {prm.Name}:{ValueType_Type}");
+                    }
+                    else if ((attributes & GenericParameterAttributes.DefaultConstructorConstraint) == GenericParameterAttributes.DefaultConstructorConstraint)
+                    {
+                        parmData.Add($"where {prm.Name}:{Default_Constructor}");
+                    }
+
+                }
+            }
+        }
+
+        return parmData;
+    }
     private static string GetName(string? name) => name?.Split('`')[0] ?? string.Empty;
 
-
+    #endregion Private Members
 }
