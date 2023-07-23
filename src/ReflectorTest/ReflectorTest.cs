@@ -485,6 +485,7 @@ public class ReflectorTest
         return evnt.GetEventAccessModifier();
 
     }
+
     [TestCase("MyEvent4", ExpectedResult = "")]
     [TestCase("MyEvent3", ExpectedResult = "static")]
     [TestCase("MyEvent2", ExpectedResult = "sealed override")]
@@ -526,6 +527,146 @@ public class ReflectorTest
         Assert.AreEqual("static", result);
     }
 
+
+    [TestCase(typeof(string[]), ExpectedResult = "String[]:Array,IList<String>,ICollection<String>,IEnumerable<String>,IReadOnlyList<String>,IReadOnlyCollection<String>")]
+    [TestCase(typeof(List<string>), ExpectedResult = "public class List<String>:IList<String>,ICollection<String>,IEnumerable<String>,IEnumerable,IList,ICollection,IReadOnlyList<String>,IReadOnlyCollection<String>")]
+    [TestCase(typeof(string), ExpectedResult = "")]
+    [TestCase(typeof(int), ExpectedResult = "")]
+    [TestCase(typeof(object), ExpectedResult = "")]
+    [TestCase(typeof(Guid), ExpectedResult = "")]
+    [TestCase(typeof(UIntPtr), ExpectedResult = "")]
+    [TestCase(typeof(String), ExpectedResult = "")]
+    [TestCase(typeof(DateTimeOffset), ExpectedResult = "")]
+    [TestCase(typeof(DateTime), ExpectedResult = "")]
+    [TestCase(typeof(DateOnly), ExpectedResult = "")]
+    [TestCase(typeof(TimeOnly), ExpectedResult = "")]
+    [TestCase(typeof(TimeSpan), ExpectedResult = "")]
+    [TestCase(typeof(Char), ExpectedResult = "")]
+    [TestCase(typeof(char), ExpectedResult = "")]
+    [TestCase(typeof(Boolean), ExpectedResult = "")]
+    [TestCase(typeof(Double), ExpectedResult = "")]
+    [TestCase(typeof(UInt32), ExpectedResult = "")]
+    [TestCase(typeof(Single), ExpectedResult = "")]
+    [TestCase(typeof(ValueType), ExpectedResult = "")]
+    [TestCase(typeof(SampleRecord), ExpectedResult = "public readonly record struct SampleRecord:IEquatable<SampleRecord>")]
+    [TestCase(typeof(Sample), ExpectedResult = "public readonly struct Sample")]
+    [TestCase(typeof(MyEmptyRecordStruct), ExpectedResult = "public record struct MyEmptyRecordStruct:IEquatable<MyEmptyRecordStruct>")]
+    [TestCase(typeof(MyStaticClass), ExpectedResult = "public static class MyStaticClass")]
+    [TestCase(typeof(MyRecordAndClass), ExpectedResult = "public record MyRecordAndClass:IEquatable<MyRecordAndClass>")]
+    [TestCase(typeof(MyRecord), ExpectedResult = "public record MyRecord:IEquatable<MyRecord>")]
+    [TestCase(typeof(MyRecordAb), ExpectedResult = "public abstract record MyRecordAb:IEquatable<MyRecordAb>")]
+    [TestCase(typeof(MyRecordSealed), ExpectedResult = "public sealed record MyRecordSealed:IEquatable<MyRecordSealed>")]
+    [TestCase(typeof(MyClasses), ExpectedResult = "internal class MyClasses")]
+    [TestCase(typeof(MyClassesAb), ExpectedResult = "internal abstract class MyClassesAb")]
+    [TestCase(typeof(MyClassesSealed), ExpectedResult = "internal sealed class MyClassesSealed")]
+
+    public string Test_Type_AsString(Type type)
+    {
+       return type.AsString().Trim();
+    }
+
+    [TestCase("MyProperty", ExpectedResult = "public  Int32 MyProperty{get;set;}")]
+    [TestCase("MyPropertyGetOnly", ExpectedResult = "public  Int32 MyPropertyGetOnly{get;}")]
+    [TestCase("MyPropertySet", ExpectedResult = "public  Int32 MyPropertySet{set;}")]
+    [TestCase("MyPropertyNoBacking", ExpectedResult = "public  Int32 MyPropertyNoBacking{get;set;}")]
+    [TestCase("MyPropertyInitOnly", ExpectedResult = "public  Int32 MyPropertyInitOnly{get;init;}")]
+    [TestCase("MyPropertyLambda", ExpectedResult = "public  Int32 MyPropertyLambda{get;}")]
+    [TestCase("MyPropertyPrivate", ExpectedResult = "private  Int32 MyPropertyPrivate{get;}")]
+    [TestCase("MyPropertyProtected", ExpectedResult = "protected  Int32 MyPropertyProtected{get;}")]
+    [TestCase("MyPropertyInternal", ExpectedResult = "internal  Int32 MyPropertyInternal{get;}")]
+    [TestCase("MyPropertyProtectedInternal", ExpectedResult = "protected internal  Int32 MyPropertyProtectedInternal{get;}")]
+    [TestCase("MyPropertyStatic", ExpectedResult = "public static Int32 MyPropertyStatic{get;set;}")]
+    [TestCase("MyPropertyAbstract", ExpectedResult = "public abstract Int32 MyPropertyAbstract{get;set;}")]
+    [TestCase("MyPropertyVirtual", ExpectedResult = "public virtual Int32 MyPropertyVirtual{get;set;}")]
+    [TestCase("MyPropertySealed", ExpectedResult = "public sealed override Int32 MyPropertySealed{get;set;}")]
+    public string Test_Property_AsString(string name)
+    {
+        var type = typeof(PropertyTest);
+        var property = type.GetProperty(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return property.AsString();
+
+    }
+
+
+    [TestCase("state", ExpectedResult = "private  Int32 state")]
+    [TestCase("field", ExpectedResult = "public static Int32 field")]
+    [TestCase("fieldConst", ExpectedResult = "protected const Int32 fieldConst")]
+    [TestCase("fieldReadonly", ExpectedResult = "internal readonly Int32 fieldReadonly")]
+    [TestCase("fieldPro", ExpectedResult = "protected internal static readonly Int32 fieldPro")]
+    public string Test_Field_AsString(string name)
+    {
+        var type = typeof(PropertyTest);
+        var field = type.GetField(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return field.AsString();
+
+    }
+
+    [TestCase("MyStaticMethod", ExpectedResult = "public static Void MyStaticMethod()")]
+    [TestCase("MyAbstract", ExpectedResult = "protected abstract Void MyAbstract()")]
+    [TestCase("MyVirtual", ExpectedResult = "public virtual Void MyVirtual()")]
+    [TestCase("MySealed", ExpectedResult = "public sealed override Void MySealed()")]
+    [TestCase("MyMethod", ExpectedResult = "public  Void MyMethod()")]
+    public string Test_Method_AsString(string name)
+    {
+        var type = typeof(PropertyTest);
+        var method = type.GetMethod(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return method.AsString();
+
+    }
+
+    [TestCase("MyEvent4", ExpectedResult = "private  EventHandler MyEvent4")]
+    [TestCase("MyEvent3", ExpectedResult = "public static EventHandler MyEvent3")]
+    [TestCase("MyEvent2", ExpectedResult = "public sealed override EventHandler MyEvent2")]
+    [TestCase("MyEvent1", ExpectedResult = "public virtual EventHandler MyEvent1")]
+    public string Test_Event_AsString(string name)
+    {
+        var type = typeof(MyDerivedClass);
+        var evnt = type.GetEvent(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return evnt.AsString();
+
+    }
+
+    [TestCase(true, ExpectedResult = "public  MyConstructorClass()")]
+    [TestCase(false, ExpectedResult = "private  MyConstructorClass(Int32 age)")]
+    public string Test_Constructor_AsString(bool isPublic)
+    {
+        var type = typeof(MyConstructorClass);
+        var ctor = type.GetAllConstructors().First(x => x.IsPublic == isPublic && x.IsPrivate == !isPublic);
+        return ctor.AsString();
+
+    }
+
+    [Test]
+    public void Test_Protected_Constructor_AsString()
+    {
+        var type = typeof(MyConstructorClass);
+        var ctor = type.GetAllConstructors().First(x => x.IsFamily);
+        var result = ctor.AsString();
+        Assert.AreEqual("protected  MyConstructorClass(String name)", result);
+    }
+
+    [Test]
+    public void Test_Static_GetConstructor_AsString()
+    {
+        var type = typeof(MyConstructorClass);
+        var ctor = type.GetAllConstructors().First(c => c.IsStatic);
+        var result = ctor.AsString();
+
+        Assert.AreEqual("private static MyConstructorClass()", result);
+    }
+
+    [TestCase("Find", ExpectedResult = "public  T Find(Predicate<T> match)")]
+    [TestCase("Exists", ExpectedResult = "public  Boolean Exists(Predicate<T> match)")]
+    [TestCase("AddRange", ExpectedResult = "public  Void AddRange(IEnumerable<T> collection)")]
+    [TestCase("Add", ExpectedResult = "public sealed override Void Add(T item)")]
+    [TestCase("ToString", ExpectedResult = "public virtual String ToString()")]
+    public string Test_Generic_Method_AsString(string name)
+    {
+        var type = typeof(List<>);
+        var method = type.GetMethod(name, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+        return method.AsString();
+
+    }
     public class PublicClass
     {
     }

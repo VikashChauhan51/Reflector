@@ -892,6 +892,8 @@ public static class ReflectionExtensions
 
         //check type is not supported
         if (classOrEnumOrStructOrInterface is null ||
+            classOrEnumOrStructOrInterface == typeof(ValueType) ||
+            classOrEnumOrStructOrInterface == typeof(object) ||
             classOrEnumOrStructOrInterface.IsPrimitive() ||
             !(classOrEnumOrStructOrInterface.IsClass ||
             classOrEnumOrStructOrInterface.IsEnum ||
@@ -988,7 +990,7 @@ public static class ReflectionExtensions
         var name = GetName(field.Name);
         return $@"{fieldAccessSpecifier} {fieldModifier} {fieldReturnTypes} {name}";
     }
-    public static string AsString(EventInfo @event, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
+    public static string AsString(this EventInfo @event, string genericSepratorStartTag = "<", string genericSepratorEndTag = ">")
     {
         if (@event == null) return string.Empty;
 
@@ -1002,6 +1004,8 @@ public static class ReflectionExtensions
     {
         //check type is not supported
         if (classOrEnumOrStructOrInterface is null ||
+            classOrEnumOrStructOrInterface == typeof(ValueType) ||
+            classOrEnumOrStructOrInterface == typeof(object) ||
             classOrEnumOrStructOrInterface.IsPrimitive() ||
             !(classOrEnumOrStructOrInterface.IsClass ||
             classOrEnumOrStructOrInterface.IsEnum ||
@@ -1010,6 +1014,7 @@ public static class ReflectionExtensions
         {
             return string.Empty;
         }
+
         return GetTypeName(classOrEnumOrStructOrInterface, genericSepratorStartTag, genericSepratorEndTag);
     }
     #endregion Public
