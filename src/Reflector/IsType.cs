@@ -151,9 +151,13 @@ public static class IsType
     {
         return type.IsArray || (type != typeof(string) && AssignableTo(type, typeof(System.Collections.IEnumerable)));
     }
-    public static bool AssignableTo(Type assignableType, Type type)
+    public static bool AssignableTo(Type fromType, Type toType)
     {
-        return type?.IsAssignableFrom(assignableType) ?? false;
+        if (fromType == null || toType == null) return false;
+
+        return toType.IsGenericTypeDefinition
+            ? toType.IsAssignableTo(fromType)
+            : fromType.IsAssignableFrom(toType);
     }
     public static bool CanBeNull(Type type)
     {
@@ -285,5 +289,45 @@ public static class IsType
         elementType = null;
         return false;
     }
+    public static bool AssignableToOpenGeneric(Type type, Type elementType)
+    {
+        if (elementType.IsInterface)
+        {
+            return ImplementationOfOpenGeneric(type, elementType);
+        }
 
+        return type == elementType || DerivedFromOpenGeneric(type, elementType);
+    }
+    public static bool ImplementationOfOpenGeneric(Type type, Type elementType)
+    {
+        if (type.IsInterface && type.IsGenericType &&
+            type.GetGenericTypeDefinition() == elementType)
+        {
+            return true;
+        }
+        return type.GetInterfaces()
+            .Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == elementType);
+    }
+    public static bool DerivedFromOpenGeneric(Type? type, Type? elementType)
+    {
+        if (type == null || elementType == null)
+        {
+            return false;
+        }
+
+        if (type == elementType)
+        {
+            return false;
+        }
+
+        for (Type? baseType = type; baseType is not null; baseType = baseType.BaseType)
+        {
+            if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == elementType)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
