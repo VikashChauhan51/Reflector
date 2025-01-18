@@ -105,6 +105,21 @@ public static class ReflectionExtensions
             || Convert.GetTypeCode(type) != TypeCode.Object);
     }
 
+    public static bool IsNumericType(this object obj)
+    {
+        return obj is (
+            int or
+            long or
+            float or
+            double or
+            decimal or
+            sbyte or
+            byte or
+            short or
+            ushort or
+            uint or
+            ulong);
+    }
     public static object? InvokeStaticMethod(this Type type, string name, params object[] args)
     {
         return type?.GetTypeInfo().InvokeMember(
