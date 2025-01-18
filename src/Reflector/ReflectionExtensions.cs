@@ -324,6 +324,29 @@ public static class ReflectionExtensions
     {
         return type?.GetEvents(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(e => e.AddMethod.IsPublic || e.AddMethod.IsFamily).ToArray();
     }
+    public static MethodInfo? GetExplicitConversionOperator(this Type type, Type sourceType, Type targetType)
+    {
+        return type
+            .GetConversionOperators(sourceType, targetType, name => name is "op_Explicit")
+            .SingleOrDefault();
+    }
+
+    public static MethodInfo? GetImplicitConversionOperator(this Type type, Type sourceType, Type targetType)
+    {
+        return type
+            .GetConversionOperators(sourceType, targetType, name => name is "op_Implicit")
+            .SingleOrDefault();
+    }
+    public static bool IsIndexer(this PropertyInfo member)
+    {
+        return member.GetIndexParameters().Length != 0;
+    }
+
+    public static bool IsDecoratedWith<TAttribute>(this MemberInfo type)
+        where TAttribute : Attribute
+    {
+        return Attribute.IsDefined(type, typeof(TAttribute), inherit: false);
+    }
     public static FieldInfo[]? GetPublicAndProtectedStaticFields(this Type type)
     {
 
@@ -861,6 +884,20 @@ public static class ReflectionExtensions
         }
     }
     private static string GetName(string? name) => name?.Split('`')[0] ?? string.Empty;
+    private static IEnumerable<MethodInfo> GetConversionOperators(this Type type, Type sourceType, Type targetType,
+      Func<string, bool> predicate)
+    {
+        return type
+            .GetMethods()
+            .Where(m =>
+                m.IsPublic
+                && m.IsStatic
+                && m.IsSpecialName
+                && m.ReturnType == targetType
+                && predicate(m.Name)
+                && m.GetParameters() is { Length: 1 } parameters
+                && parameters[0].ParameterType == sourceType);
+    }
 
     #endregion Private Members
 }

@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace VReflector;
 
@@ -57,28 +58,25 @@ public static class IsType
         if (type == null || !type.IsClass)
             return false;
 
-        bool hasCompilerGeneratedToString = type
-            .GetMethod("ToString")
-            ?.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false)
-            ?.Any() == true;
-
-        bool hasEqualityContract = type
-            ?.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance)
-            ?.Any(p => p.Name == "EqualityContract") == true;
-
-        return hasCompilerGeneratedToString && hasEqualityContract;
+        return type.GetMethod("<Clone>$", BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly) is { } &&
+            type.GetProperty("EqualityContract", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly)?
+                .GetMethod?.IsDecoratedWith<CompilerGeneratedAttribute>() == true;
     }
     public static bool RecordStruct(Type type)
     {
         if (type == null || !type.IsValueType || type.IsPrimitive)
             return false;
 
-        bool hasCompilerGeneratedToString = type
-            .GetMethod("ToString")
-            ?.GetCustomAttributes(typeof(CompilerGeneratedAttribute), false)
-            .Any() == true;
-
-        return hasCompilerGeneratedToString;
+        return type.BaseType == typeof(ValueType) &&
+            type.GetMethod("PrintMembers", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly, null,
+                new Type[] { typeof(StringBuilder) }, null) is { } &&
+            type.GetMethod("op_Equality", BindingFlags.Static | BindingFlags.Public | BindingFlags.DeclaredOnly, null,
+                    new Type[] { type, type }, null)?
+                .IsDecoratedWith<CompilerGeneratedAttribute>() == true;
+    }
+    public static bool KeyValuePair(Type type)
+    {
+        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(KeyValuePair<,>);
     }
     public static bool Enum(Type type) => type?.GetTypeInfo()?.BaseType == typeof(Enum);
     public static bool Nullable(Type? type) => type is null || type.IsClass || System.Nullable.GetUnderlyingType(type) != null;
@@ -106,6 +104,32 @@ public static class IsType
         return type != null &&
                type.GetCustomAttributes(false).Any(a => a is CompilerGeneratedAttribute) &&
                type.Name.StartsWith("<>") && type.IsClass;
+    }
+    private static bool IsTuple(Type type)
+    {
+        if (type == null || !type.IsGenericType)
+        {
+            return false;
+        }
+
+        Type openType = type.GetGenericTypeDefinition();
+
+        return openType == typeof(ValueTuple<>)
+            || openType == typeof(ValueTuple<,>)
+            || openType == typeof(ValueTuple<,,>)
+            || openType == typeof(ValueTuple<,,,>)
+            || openType == typeof(ValueTuple<,,,,>)
+            || openType == typeof(ValueTuple<,,,,,>)
+            || openType == typeof(ValueTuple<,,,,,,>)
+            || (openType == typeof(ValueTuple<,,,,,,,>) && IsTuple(type.GetGenericArguments()[7]))
+            || openType == typeof(Tuple<>)
+            || openType == typeof(Tuple<,>)
+            || openType == typeof(Tuple<,,>)
+            || openType == typeof(Tuple<,,,>)
+            || openType == typeof(Tuple<,,,,>)
+            || openType == typeof(Tuple<,,,,,>)
+            || openType == typeof(Tuple<,,,,,,>)
+            || (openType == typeof(Tuple<,,,,,,,>) && IsTuple(type.GetGenericArguments()[7]));
     }
     public static bool ReadonlyStruct(Type type)
     {
@@ -242,7 +266,7 @@ public static class IsType
         elementType = null;
         return false;
     }
-    public static bool ReadOnlyMemory( Type type)
+    public static bool ReadOnlyMemory(Type type)
     {
         if (GenericType(type) && type.GetGenericTypeDefinition().FullName == "System.ReadOnlyMemory`1")
         {
