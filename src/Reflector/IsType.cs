@@ -253,6 +253,7 @@ public static class IsType
     }
     public static bool Memory(Type type)
     {
+        if (type == null) return false; 
         if (GenericType(type) && type.GetGenericTypeDefinition().FullName == "System.Memory`1")
         {
             return true;
@@ -269,6 +270,14 @@ public static class IsType
 
         elementType = null;
         return false;
+    }
+    public static bool IsBuffer(Type type)
+    {
+        return IsArray(type) || Memory(type);
+    }
+    public static bool IsArray(Type type)
+    {
+        return type?.IsArray ?? false;
     }
     public static bool ReadOnlyMemory(Type type)
     {
