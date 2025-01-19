@@ -101,29 +101,33 @@ public static class IsNumerics
     {
         return a - b;
     }
-    public static bool AreNotEqual<T>(T a, T b) where T : INumber<T>
+    public static bool AreNotEqual<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
-        return !a.Equals(b);
+        return a?.CompareTo(b) != 0;
     }
-    public static bool IsGreaterThan<T>(T a, T b) where T : INumber<T>
+    public static bool GreaterThan<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
-        return a > b;
+        return a?.CompareTo(b) > 0;
     }
-    public static bool IsLessThan<T>(T a, T b) where T : INumber<T>
+
+    public static bool LessThan<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
-        return a < b;
+        return a?.CompareTo(b) < 0;
     }
-    public static bool IsGreaterThanOrEqual<T>(T a, T b) where T : INumber<T>
+
+    public static bool GreaterThanOrEqual<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
-        return a >= b;
+        return a?.CompareTo(b) >= 0;
     }
-    public static bool IsLessThanOrEqual<T>(T a, T b) where T : INumber<T>
+
+    public static bool LessThanOrEqual<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
-        return a <= b;
+        return a?.CompareTo(b) <= 0;
     }
-    public static bool AreEqual<T>(T a, T b) where T : INumber<T>
+
+    public static bool AreEqual<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
-        return a.Equals(b);
+        return a?.CompareTo(b) == 0;
     }
     public static bool AreEqual<T>(T expected, T actual, T tolerance) where T : INumber<T>
     {
@@ -244,6 +248,18 @@ public static class IsNumerics
         }
         return false;
     }
+    public static bool IsNaN(object value)
+    {
+        if (value is double d)
+        {
+            return double.IsNaN(d);
+        }
+        if (value is float f)
+        {
+            return float.IsNaN(f);
+        }
+        return false;
+    }
     public static bool IsInfinity<T>(T value) where T : INumber<T>
     {
         if (T.IsInfinity(value))
@@ -287,9 +303,51 @@ public static class IsNumerics
     }
     public static T Clamp<T>(T value, T min, T max) where T : INumber<T>
     {
+        if (min > max)
+        {
+            throw new NotSupportedException("min is greater than max value");
+        }
         if (value < min) return min;
         if (value > max) return max;
         return value;
+    }
+    public static T Max<T>(T x, T y) where T : INumber<T>
+    {
+        if (x != y)
+        {
+            if (!T.IsNaN(x))
+            {
+                return y < x ? x : y;
+            }
+
+            return x;
+        }
+        return T.IsNegative(y) ? x : y;
+    }
+    public static T Min<T>(T x, T y) where T : INumber<T>
+    {
+        if ((x != y) && !T.IsNaN(x))
+        {
+            return x < y ? x : y;
+        }
+        return T.IsNegative(x) ? x : y;
+    }
+    public static int Sign<T>(T value) where T : INumber<T>
+    {
+        if (value != T.Zero)
+        {
+            return T.IsNegative(value) ? -1 : +1;
+        }
+        return 0;
+    }
+    public static T CopySign<T>(T value, T sign) where T : INumber<T>
+    {
+        T result = value;
+        if (T.IsNegative(value) != T.IsNegative(sign))
+        {
+            result = checked(-result);
+        }
+        return result;
     }
     public static bool IsInRange<T>(T value, T min, T max, bool inclusive = true) where T : INumber<T>
     {
@@ -358,6 +416,4 @@ public static class IsNumerics
 
         return Factorial(n) / (Factorial(k) * Factorial(n - k));
     }
-
-
 }
