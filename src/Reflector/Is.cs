@@ -5,12 +5,12 @@ namespace VReflector;
 
 public static class Is
 {
+    public static bool InRange<T>([DisallowNull] T comparable, T? from, T? to)
+      where T : IComparable<T> =>
+      comparable.CompareTo(from) >= 0 &&
+      comparable.CompareTo(to) <= 0;
     public static Type? GetType(object? obj) => obj?.GetType();
     public static Type GetType<T>() => typeof(T);
-    public static bool InRange<T>([DisallowNull] T comparable, T? from, T? to)
-        where T : IComparable<T> =>
-        comparable.CompareTo(from) >= 0 &&
-        comparable.CompareTo(to) <= 0;
     public static bool Same(object? actual, object? expected)
     {
         if (actual == null && expected == null)

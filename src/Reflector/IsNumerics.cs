@@ -6,6 +6,10 @@ namespace VReflector;
 
 public static class IsNumerics
 {
+    public static bool InRange<T>([DisallowNull] T comparable, T? from, T? to)
+       where T : IComparable<T> =>
+       comparable.CompareTo(from) >= 0 &&
+       comparable.CompareTo(to) <= 0;
     public static bool NumericType([NotNullWhen(true)] object? obj)
     {
         return obj is double or float or byte or sbyte or decimal or int or uint or long or ulong or short or ushort or Half;
@@ -109,22 +113,18 @@ public static class IsNumerics
     {
         return a?.CompareTo(b) > 0;
     }
-
     public static bool LessThan<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
         return a?.CompareTo(b) < 0;
     }
-
     public static bool GreaterThanOrEqual<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
         return a?.CompareTo(b) >= 0;
     }
-
     public static bool LessThanOrEqual<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
         return a?.CompareTo(b) <= 0;
     }
-
     public static bool AreEqual<T>(T a, T b) where T : INumber<T>, IComparable<T>
     {
         return a?.CompareTo(b) == 0;
@@ -268,13 +268,25 @@ public static class IsNumerics
         }
         return false;
     }
-    public static bool IsZero<T>(T value) where T : INumber<T>
+    public static bool IsPositive<T>(T value) where T : INumber<T>, IComparable<T>
     {
-        return value == T.Zero;
+        return value?.CompareTo(T.Zero) > 0;
     }
-    public static T Negate<T>(T value) where T : INumber<T>
+    public static bool IsNegative<T>(T value) where T : INumber<T>, IComparable<T>
     {
-        return -value;
+        return value?.CompareTo(T.Zero) < 0;
+    }
+    public static bool IsZero<T>(T value) where T : INumber<T>, IComparable<T>
+    {
+        return value?.CompareTo(T.Zero) == 0;
+    }
+    public static bool IsPositiveOrZero<T>(T value) where T : INumber<T>, IComparable<T>
+    {
+        return value?.CompareTo(T.Zero) >= 0;
+    }
+    public static bool IsNegativeOrZero<T>(T value) where T : INumber<T>, IComparable<T>
+    {
+        return value?.CompareTo(T.Zero) <= 0;
     }
     public static T GCD<T>(T a, T b) where T : INumber<T>
     {
