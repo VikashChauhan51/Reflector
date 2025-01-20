@@ -8,6 +8,16 @@ namespace VReflector;
 
 public static class IsType
 {
+    private const string ImplicitCastMethodName = "op_Implicit";
+    private const string ExplicitCastMethodName = "op_Explicit";
+    public static bool CanCast<T>([DisallowNull] this Type baseType)
+    {
+        if (baseType is null)
+        {
+            return false;
+        }
+        return CanCastImplicit<T>(baseType) || CanCastExplicit<T>(baseType);
+    }
     public static string? GetName(Type type) => type?.Name;
     public static object? GetDefaultValue(Type? type)
     {
@@ -209,6 +219,10 @@ public static class IsType
     {
         return type != null && type.IsGenericType;
     }
+    public static bool HasAttribute<TAttribute>(this Type type, bool inherit = false) where TAttribute : Attribute
+    {
+        return type != null && Attribute(type, typeof(TAttribute), inherit: inherit);
+    }
     public static bool Attribute(Type type, Type attributeType, bool inherit)
     {
         return type != null && System.Attribute.IsDefined(type, attributeType, inherit: inherit);
@@ -253,7 +267,7 @@ public static class IsType
     }
     public static bool Memory(Type type)
     {
-        if (type == null) return false; 
+        if (type == null) return false;
         if (GenericType(type) && type.GetGenericTypeDefinition().FullName == "System.Memory`1")
         {
             return true;
@@ -271,14 +285,17 @@ public static class IsType
         elementType = null;
         return false;
     }
-    public static bool IsBuffer(Type type)
+    public static bool IsBuffer(this Type type)
     {
         return IsArray(type) || Memory(type);
     }
-    public static bool IsArray(Type type)
+    public static bool IsArray(this Type type)
     {
         return type?.IsArray ?? false;
     }
+
+    #region Private members
+
     public static bool ReadOnlyMemory(Type type)
     {
         if (GenericType(type) && type.GetGenericTypeDefinition().FullName == "System.ReadOnlyMemory`1")
@@ -339,4 +356,25 @@ public static class IsType
 
         return false;
     }
+    private static bool CanCastImplicit<T>(Type baseType)
+    {
+        return CanCast<T>(baseType, ImplicitCastMethodName);
+    }
+    private static bool CanCastExplicit<T>(Type baseType)
+    {
+        return CanCast<T>(baseType, ExplicitCastMethodName);
+    }
+    private static bool CanCast<T>(Type baseType, string castMethodName)
+    {
+        var targetType = typeof(T);
+        return baseType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(mi => mi.Name == castMethodName && mi.ReturnType == targetType)
+            .Any(mi =>
+            {
+                ParameterInfo? pi = mi.GetParameters().FirstOrDefault();
+                return pi != null && pi.ParameterType == baseType;
+            });
+    }
+
+    #endregion
 }
