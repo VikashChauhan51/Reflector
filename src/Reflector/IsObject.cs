@@ -63,14 +63,14 @@ public static class IsObject
         return obj is T || CanCast<T>(obj.GetType());
     }
     public static Type? GetType(this object? obj) => obj?.GetType();
-    public static bool Same(this object? actual, object? expected)
+    public static bool IsSame(this object? actual, object? expected)
     {
         if (actual == null || expected == null)
             return false;
 
         return ReferenceEquals(actual, expected);
     }
-    public static bool Equal(this object? actual, object? expected)
+    public static bool IsEqual(this object? actual, object? expected)
     {
         if (actual == null || expected == null)
             return false;
@@ -115,7 +115,7 @@ public static class IsObject
         }
         return string.Empty;
     }
-    public static bool NumericType([NotNullWhen(true)] this object? obj)
+    public static bool Is([NotNullWhen(true)] this object? obj)
     {
         return obj is double or float or byte or sbyte or decimal or int or uint or long or ulong or short or ushort or Half;
     }
@@ -157,7 +157,7 @@ public static class IsObject
         if (enumerable == null && obj != null)
         {
             var objectType = obj.GetType();
-            if (IsType.Memory(objectType, out var genericParameterType))
+            if (IsType.IsMemory(objectType, out var genericParameterType))
             {
                 var readOnlyMemory = ToReadOnlyMemory(obj, objectType, genericParameterType);
 
@@ -166,7 +166,7 @@ public static class IsObject
                     enumerable = ToEnumerable(readOnlyMemory, genericParameterType);
                 }
             }
-            else if (IsType.ReadOnlyMemory(objectType, out genericParameterType))
+            else if (IsType.IsReadOnlyMemory(objectType, out genericParameterType))
             {
                 enumerable = ToEnumerable(obj, genericParameterType);
             }
@@ -187,7 +187,7 @@ public static class IsObject
             .SingleOrDefault(method =>
                 method.Name == "op_Implicit"
                 && method.GetParameters()[0].ParameterType == objectType
-                && IsType.ReadOnlyMemory(method.ReturnType, out var returnElementType)
+                && IsType.IsReadOnlyMemory(method.ReturnType, out var returnElementType)
                 && returnElementType == genericParameterType)
             ?.Invoke(null, new[] { obj })!;
     }

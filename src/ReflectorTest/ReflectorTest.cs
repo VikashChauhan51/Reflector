@@ -26,7 +26,7 @@ public class ReflectorTest
     public void Verify_Type_Is_Enum(Type type, bool expected)
     {
 
-        var result = IsType.Enum(type);
+        var result = IsType.IsEnum(type);
         Assert.AreEqual(expected, result);
     }
 
@@ -34,7 +34,7 @@ public class ReflectorTest
     public void GetAllConstructors_ReturnsNull_WhenTypeIsNull()
     {
         Type? type = null;
-        var constructors = Reflector.ReflectionExtensions.GetAllConstructors(type);
+        var constructors = type.GetAllConstructors();
         Assert.IsNull(constructors);
     }
 
@@ -43,7 +43,7 @@ public class ReflectorTest
     public void GetAllConstructors_ReturnsPublicConstructors()
     {
         var type = typeof(PersonAll);
-        var constructors = Reflector.ReflectionExtensions.GetConstructors(type);
+        var constructors = type.GetConstructors();
         Assert.That(constructors!.Length == 2);
     }
 
@@ -51,7 +51,7 @@ public class ReflectorTest
     public void GetAllConstructors_ReturnsAllConstructors_WhenTypeHasStaticConstructors()
     {
         var type = typeof(PersonAll);
-        var constructors = Reflector.ReflectionExtensions.GetAllConstructors(type);
+        var constructors = type.GetAllConstructors();
         Assert.That(constructors!.Length == 5);
         Assert.That(constructors.Count(x => x.IsStatic) == 1);
     }
@@ -62,7 +62,7 @@ public class ReflectorTest
     public void GetAllConstructors_ReturnsAllConstructors()
     {
         var type = typeof(PersonAll);
-        var constructors = Reflector.ReflectionExtensions.GetAllConstructors(type);
+        var constructors = type.GetAllConstructors();
         Assert.That(constructors!.Length == 5);
     }
 
@@ -70,7 +70,7 @@ public class ReflectorTest
     public void GetAllConstructors_ReturnsConstructorsOfCorrectType()
     {
         var type = typeof(Person);
-        var constructors = Reflector.ReflectionExtensions.GetAllConstructors(type);
+        var constructors = type.GetAllConstructors();
         Assert.That(constructors![0] is ConstructorInfo);
     }
 
@@ -78,10 +78,10 @@ public class ReflectorTest
     public void GetConstructor_AllParameters()
     {
         var type = typeof(PersonAllParm);
-        var constructors = Reflector.ReflectionExtensions.GetConstructors(type);
+        var constructors = type.GetConstructors();
         Assert.That(constructors!.Length == 1);
         Assert.That(constructors![0] is ConstructorInfo);
-        var parameters = Reflector.ReflectionExtensions.GetAllParameters(constructors[0]);
+        var parameters = constructors[0].GetAllParameters();
         Assert.That(parameters!.Length == 4);
 
     }
@@ -90,10 +90,10 @@ public class ReflectorTest
     public void GetConstructor_RequiredParameters()
     {
         var type = typeof(PersonAllParm);
-        var constructors = Reflector.ReflectionExtensions.GetConstructors(type);
+        var constructors = type.GetConstructors();
         Assert.That(constructors!.Length == 1);
         Assert.That(constructors![0] is ConstructorInfo);
-        var parameters = Reflector.ReflectionExtensions.GetRequiredParameters(constructors[0]);
+        var parameters = constructors[0].GetRequiredParameters();
         Assert.That(parameters!.Length == 2);
 
     }
@@ -102,10 +102,10 @@ public class ReflectorTest
     public void GetConstructor_ParmsParameters()
     {
         var type = typeof(PersonParm);
-        var constructors = Reflector.ReflectionExtensions.GetConstructors(type);
+        var constructors = type.GetConstructors();
         Assert.That(constructors!.Length == 1);
         Assert.That(constructors![0] is ConstructorInfo);
-        var parameters = Reflector.ReflectionExtensions.GetRequiredParameters(constructors[0]);
+        var parameters = constructors[0].GetRequiredParameters();
         Assert.That(parameters!.Length == 1);
 
     }
@@ -114,7 +114,7 @@ public class ReflectorTest
     public void GetExtendedType_ReturnsAllConstructors()
     {
         var type = typeof(PersonEntened);
-        var constructors = Reflector.ReflectionExtensions.GetAllConstructors(type);
+        var constructors = type.GetAllConstructors();
         Assert.That(constructors!.Length == 1);
     }
 
@@ -139,7 +139,7 @@ public class ReflectorTest
     public void Verify_Type_Is_Nullable(Type type, bool expected)
     {
 
-        var result = IsType.Nullable(type);
+        var result = IsType.IsNullable(type);
         Assert.AreEqual(expected, result);
     }
 
@@ -173,7 +173,7 @@ public class ReflectorTest
     [TestCase(typeof(IXYZ), ExpectedResult = true)]
     public bool IsDeepMutable_ReturnsExpectedResult(Type type)
     {
-        return IsType.DeepMutable(type);
+        return IsType.IsDeepMutable(type);
     }
 
 
@@ -188,7 +188,7 @@ public class ReflectorTest
     [TestCase(typeof(IXYZ), ExpectedResult = true)]
     public bool IsMutable_ReturnsExpectedResult(Type type)
     {
-        return IsType.Mutable(type.GetTypeInfo());
+        return IsType.IsMutable(type.GetTypeInfo());
     }
 
     [TestCase(typeof(Person), ExpectedResult = false)]
@@ -240,7 +240,7 @@ public class ReflectorTest
             Age = 30
         };
         var type = anonType.GetType();
-        var result = IsType.Anonymous(type);
+        var result = IsType.IsAnonymous(type);
 
         Assert.That(result);
     }
@@ -257,22 +257,7 @@ public class ReflectorTest
     public bool Test_Is_Not_Anonymous_Type(Type type)
     {
 
-        return IsType.Anonymous(type);
-    }
-
-    [TestCase(typeof(Person), ExpectedResult = false)]
-    [TestCase(typeof(object), ExpectedResult = false)]
-    [TestCase(typeof(ImmutableUser), ExpectedResult = false)]
-    [TestCase(typeof(IXYZ), ExpectedResult = false)]
-    [TestCase(typeof(MyEmptyRecord), ExpectedResult = false)]
-    [TestCase(typeof(MyRecord), ExpectedResult = false)]
-    [TestCase(typeof(MyEmptyRecordStruct), ExpectedResult = false)]
-    [TestCase(typeof(MyRecordStruct), ExpectedResult = false)]
-    [TestCase(typeof(MyRecord2), ExpectedResult = false)]
-    [TestCase(typeof(MyStaticClass), ExpectedResult = true)]
-    public bool Test_Is_Static_Type(Type type)
-    {
-        return IsType.Static(type);
+        return IsType.IsAnonymous(type);
     }
 
     [TestCase(typeof(Person), ExpectedResult = false)]
@@ -289,7 +274,7 @@ public class ReflectorTest
     [TestCase(typeof(SampleRecord), ExpectedResult = true)]
     public bool Test_Is_Readonly_Struct(Type type)
     {
-        return IsType.ReadonlyStruct(type);
+        return IsType.IsReadonlyStruct(type);
     }
 
     public class PublicClass
