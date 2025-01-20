@@ -11,6 +11,11 @@ public static class IsType
 {
     private const string ImplicitCastMethodName = "op_Implicit";
     private const string ExplicitCastMethodName = "op_Explicit";
+    private const BindingFlags PublicInstanceMembersFlag =
+        BindingFlags.Public | BindingFlags.Instance;
+
+    private const BindingFlags AllStaticAndInstanceMembersFlag =
+        PublicInstanceMembersFlag | BindingFlags.NonPublic | BindingFlags.Static;
 
     public static Array? CreateEmptyArray([DisallowNull] this Type? type)
     {
@@ -235,6 +240,13 @@ public static class IsType
             .GetConversionOperators(sourceType, targetType, name => name is "op_Implicit")
             .SingleOrDefault();
     }
+    public static PropertyInfo GetIndexerByParameterTypes(this Type type, IEnumerable<Type> parameterTypes)
+    {
+        return type.GetProperties(AllStaticAndInstanceMembersFlag)
+            .SingleOrDefault(p =>
+                p.IsIndexer() && p.GetIndexParameters().Select(i => i.ParameterType).SequenceEqual(parameterTypes));
+    }
+
     public static FieldInfo[]? GetPublicAndProtectedStaticFields(this Type type)
     {
 
@@ -334,6 +346,23 @@ public static class IsType
         }
 
         return type.GetGenericParameterConstraints();
+    }
+
+    public static AccessModifier GetTypeAccessModifier(this Type type)
+    {
+
+        return type switch
+        {
+            _ when type.IsPublic => AccessModifier.Public,
+            _ when type.IsNestedPublic => AccessModifier.Public,
+            _ when type.IsNestedPrivate => AccessModifier.Private,
+            _ when type.IsNestedFamily => AccessModifier.Protected,
+            _ when type.IsNestedAssembly => AccessModifier.Internal,
+            _ when type.IsNestedFamANDAssem => AccessModifier.PrivateProtected,
+            _ when type.IsNestedFamORAssem => AccessModifier.ProtectedInternal,
+            _ when type.IsNotPublic => AccessModifier.Internal,
+            _ => AccessModifier.Internal
+        };
     }
     public static string GetAccessModifier(this Type type)
     {
@@ -754,6 +783,11 @@ public static class IsType
         }
 
         return false;
+    }
+    public static bool IsSameOrInherits(this Type actualType, Type expectedType)
+    {
+        return actualType == expectedType ||
+            expectedType.IsAssignableFrom(actualType);
     }
 
     #region Private members
