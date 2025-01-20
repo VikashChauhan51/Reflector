@@ -9,17 +9,8 @@ public static class Is
       where T : IComparable<T> =>
       comparable.CompareTo(from) >= 0 &&
       comparable.CompareTo(to) <= 0;
-    public static Type? GetType(object? obj) => obj?.GetType();
     public static Type GetType<T>() => typeof(T);
-    public static bool Same(object? actual, object? expected)
-    {
-        if (actual == null && expected == null)
-            return true;
-        if (actual == null || expected == null)
-            return false;
-
-        return ReferenceEquals(actual, expected);
-    }
+    
     public static bool Same<T>(T? actual, T? expected) where T : class
     {
         if (actual == null && expected == null)
@@ -29,32 +20,7 @@ public static class Is
 
         return ReferenceEquals(actual, expected);
     }
-    public static bool Equal(object? actual, object? expected)
-    {
-        if (actual == null && expected == null)
-            return true;
-        if (actual == null || expected == null)
-            return false;
-
-        Type actualType = actual.GetType();
-        Type expectedType = expected.GetType();
-
-        if (actualType != expectedType)
-            return false;
-
-        if (actualType.IsValueType)
-            return actual.Equals(expected);
-
-        if (IsType.Record(actualType))
-            return actual.Equals(expected);
-
-        if (actual is IComparable comparable)
-        {
-            return comparable.CompareTo(expected) == 0;
-        }
-
-        return ReferenceEquals(actual, expected);
-    }
+    
     public static bool Equal<T>(T? actual, T? expected) where T : IEquatable<T>, IComparable<T>
     {
         if (actual == null && expected == null)

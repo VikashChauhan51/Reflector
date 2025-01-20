@@ -9,40 +9,17 @@ public static class IsStackTrace
     {
         return new StackTrace().ToString();
     }
-    public static string GetStackTrace(object obj)
-    {
-        if (obj is StackTrace stackTrace)
-        {
-            return stackTrace.ToString();
-        }
-        return string.Empty;
-    }
     public static StackFrame[] GetStackFrames()
     {
         return new StackTrace(true).GetFrames();
     }
-
-    public static bool IsStackTraceType(object obj)
-    {
-        return obj is StackTrace;
-    }
-
     public static string GetCallerMethod()
     {
         var stackTrace = new StackTrace();
         var frame = stackTrace.GetFrame(1); // Get the caller's stack frame
         return frame?.GetMethod()?.Name ?? string.Empty;
     }
-
-    public static string GetCallerMethod(object obj)
-    {
-        if (obj is StackTrace stackTrace)
-        {
-            var frame = stackTrace.GetFrame(1); // Caller frame
-            return frame?.GetMethod()?.Name ?? string.Empty;
-        }
-        return string.Empty;
-    }
+   
     public static string GetMethodFromStackTrace(int frameIndex)
     {
         var stackTrace = new StackTrace();
