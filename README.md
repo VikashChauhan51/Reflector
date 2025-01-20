@@ -1,6 +1,25 @@
 # VReflector
-Reflection `Type` helper utility.
+
+[![NuGet Version](https://img.shields.io/nuget/v/VReflector.svg?style=flat-square)](https://www.nuget.org/packages/VReflector/)
+[![NuGet Downloads](https://img.shields.io/nuget/dt/VReflector.svg?style=flat-square)](https://www.nuget.org/packages/VReflector/)
+[![Build Status](https://github.com/VikashChauhan51/Reflector/actions/workflows/build.yml/badge.svg)](https://github.com/VikashChauhan51/resultify/actions)
+[![License](https://img.shields.io/github/license/VikashChauhan51/resultify.svg?style=flat-square)](https://github.com/VikashChauhan51/resultify/blob/main/LICENSE)
+
+**VReflector** is `Object`,`Type`,`Constructor`,`Method`,`Member`,`Event`,`Field`,`Property`,`Parameter`,`Assembly`,`StackTrace`,`Numerics` `String`,`DateTime`,`DateOnly`,`TimeOnly`,`TimeSpan` and `DateTimeOffset` helpers utility.
   
+  ## Installation
+
+You can install the VReflector package via NuGet:
+
+```shell
+dotnet add package VReflector
+```
+
+Or you can use the NuGet Package Manager:
+
+```shell
+Install-Package VReflector
+```
 
 ## Basic usage
 
