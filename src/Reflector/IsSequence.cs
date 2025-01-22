@@ -93,7 +93,7 @@ public static class IsSequence
         }
         return (nonUniqueCount, allCount);
     }
-    public static bool IsSortedAscending<T>([DisallowNull] this IEnumerable<T> collection) where T : IComparable<T>
+    public static bool IsSortedAscending<T>([DisallowNull] this IEnumerable<T> collection, IComparer<T> comparer)
     {
         if (collection == null || !collection.Any())
         {
@@ -104,7 +104,7 @@ public static class IsSequence
 
         foreach (T item in collection.Skip(1))
         {
-            if (previous.CompareTo(item) >= 0)
+            if (comparer.Compare(previous, item) >= 0)
             {
                 return false;
             }
@@ -113,7 +113,30 @@ public static class IsSequence
 
         return true;
     }
-    public static bool IsSortedDescending<T>([DisallowNull] this IEnumerable<T> collection) where T : IComparable<T>
+    public static bool IsSortedAscending<T>([DisallowNull] this IEnumerable<T> collection)
+    {
+        var comparer = Comparer<T>.Default;
+        var enumerator = collection.GetEnumerator();
+
+        if (!enumerator.MoveNext())
+        {
+            return true;
+        }
+
+        T previous = enumerator.Current;
+
+        while (enumerator.MoveNext())
+        {
+            if (comparer.Compare(previous, enumerator.Current) >= 0)
+            {
+                return false;
+            }
+            previous = enumerator.Current;
+        }
+
+        return true;
+    }
+    public static bool IsSortedDescending<T>([DisallowNull] this IEnumerable<T> collection, IComparer<T> comparer)
     {
         if (collection == null || !collection.Any())
         {
@@ -124,7 +147,7 @@ public static class IsSequence
 
         foreach (T item in collection.Skip(1))
         {
-            if (previous.CompareTo(item) <= 0)
+            if (comparer.Compare(previous, item) <= 0)
             {
                 return false;
             }
@@ -133,7 +156,30 @@ public static class IsSequence
 
         return true;
     }
-    public static bool IsSortedAscendingAndUnique<T>([DisallowNull] this IEnumerable<T> collection) where T : IComparable<T>
+    public static bool IsSortedDescending<T>([DisallowNull] this IEnumerable<T> collection)
+    {
+        var comparer = Comparer<T>.Default;
+        var enumerator = collection.GetEnumerator();
+
+        if (!enumerator.MoveNext())
+        {
+            return true;
+        }
+
+        T previous = enumerator.Current;
+
+        while (enumerator.MoveNext())
+        {
+            if (comparer.Compare(previous, enumerator.Current) <= 0)
+            {
+                return false;
+            }
+            previous = enumerator.Current;
+        }
+
+        return true;
+    }
+    public static bool IsSortedAscendingAndUnique<T>([DisallowNull] this IEnumerable<T> collection, IComparer<T> comparer)
     {
         if (collection == null || !collection.Any())
         {
@@ -144,7 +190,7 @@ public static class IsSequence
 
         foreach (T item in collection.Skip(1))
         {
-            if (previous.CompareTo(item) > 0)
+            if (comparer.Compare(previous, item) > 0)
             {
                 return false;
             }
@@ -153,7 +199,30 @@ public static class IsSequence
 
         return true;
     }
-    public static bool IsSortedDescendingAndUnique<T>([DisallowNull] this IEnumerable<T> collection) where T : IComparable<T>
+    public static bool IsSortedAscendingAndUnique<T>([DisallowNull] this IEnumerable<T> collection)
+    {
+        var comparer = Comparer<T>.Default;
+        var enumerator = collection.GetEnumerator();
+
+        if (!enumerator.MoveNext())
+        {
+            return true;
+        }
+
+        T previous = enumerator.Current;
+
+        while (enumerator.MoveNext())
+        {
+            if (comparer.Compare(previous, enumerator.Current) > 0)
+            {
+                return false;
+            }
+            previous = enumerator.Current;
+        }
+
+        return true;
+    }
+    public static bool IsSortedDescendingAndUnique<T>([DisallowNull] this IEnumerable<T> collection, IComparer<T> comparer)
     {
         if (collection == null || !collection.Any())
         {
@@ -164,11 +233,34 @@ public static class IsSequence
 
         foreach (T item in collection.Skip(1))
         {
-            if (previous.CompareTo(item) < 0)
+            if (comparer.Compare(previous, item) < 0)
             {
                 return false;
             }
             previous = item;
+        }
+
+        return true;
+    }
+    public static bool IsSortedDescendingAndUnique<T>([DisallowNull] this IEnumerable<T> collection)
+    {
+        var comparer = Comparer<T>.Default;
+        var enumerator = collection.GetEnumerator();
+
+        if (!enumerator.MoveNext())
+        {
+            return true;
+        }
+
+        T previous = enumerator.Current;
+
+        while (enumerator.MoveNext())
+        {
+            if (comparer.Compare(previous, enumerator.Current) < 0)
+            {
+                return false;
+            }
+            previous = enumerator.Current;
         }
 
         return true;
@@ -193,7 +285,7 @@ public static class IsSequence
 
         foreach (var kvp in second)
         {
-            result[kvp.Key] = kvp.Value; 
+            result[kvp.Key] = kvp.Value;
         }
 
         return result;
