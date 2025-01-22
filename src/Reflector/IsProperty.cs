@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace VReflector;
 
@@ -13,7 +14,7 @@ public static class IsProperty
         return member.GetIndexParameters().Length != 0;
     }
 
-    public static bool SetIsAllowed(this PropertyInfo pInfo, bool checkNonPublicSetter = false, bool checkInitSetter = false)
+    public static bool SetIsAllowed([DisallowNull]this PropertyInfo pInfo, bool checkNonPublicSetter = false, bool checkInitSetter = false)
     {
         var setMethod = pInfo.GetSetMethod(nonPublic: checkNonPublicSetter);
         if (setMethod == null)
@@ -37,12 +38,29 @@ public static class IsProperty
 
     }
 
-    public static string GetPropertyAccessModifier(this PropertyInfo property)
+    public static AccessModifier? GetPropertyAccessModifier([DisallowNull] this PropertyInfo property)
     {
         var method = property?.GetMethod ?? property?.SetMethod;
-        return method?.GetMethodAccessModifier() ?? string.Empty;
+        return method?.GetMethodAccessModifier();
     }
-    public static string GetPropertyModifiers(this PropertyInfo property)
+    public static bool IsVirtual([DisallowNull] this PropertyInfo property)
+    {
+        MethodInfo? methodInfo = property?.GetGetMethod(nonPublic: true) ?? property?.GetSetMethod(nonPublic: true);
+        return !methodInfo?.IsNonVirtual() ?? false;
+    }
+
+    public static bool IsStatic([DisallowNull] this PropertyInfo property)
+    {
+        MethodInfo? methodInfo = property?.GetGetMethod(nonPublic: true) ?? property?.GetSetMethod(nonPublic: true);
+        return methodInfo?.IsStatic ?? false;
+    }
+
+    public static bool IsAbstract([DisallowNull] this PropertyInfo property)
+    {
+        MethodInfo? methodInfo = property?.GetGetMethod(nonPublic: true) ?? property?.GetSetMethod(nonPublic: true);
+        return methodInfo?.IsAbstract ?? false;
+    }
+    public static string GetPropertyModifiers([DisallowNull] this PropertyInfo property)
     {
         var method = property?.GetMethod ?? property?.SetMethod;
         return method?.GetMethodModifiers() ?? string.Empty;

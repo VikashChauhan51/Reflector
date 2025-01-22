@@ -15,16 +15,16 @@ public static class IsField
     {
         return field != null && field.IsLiteral;
     }
-    public static string GetFieldAccessModifier(this FieldInfo field)
+    public static AccessModifier GetFieldAccessModifier(this FieldInfo field)
     {
         return field switch
         {
-            _ when field.IsPrivate => "private",
-            _ when field.IsPublic => "public",
-            _ when field.IsFamilyOrAssembly => "protected internal",
-            _ when field.IsFamily => "protected",
-            _ when field.IsAssembly => "internal",
-            _ => string.Empty
+            _ when field.IsPrivate => AccessModifier.Private,
+            _ when field.IsPublic => AccessModifier.Public,
+            _ when field.IsFamilyOrAssembly => AccessModifier.ProtectedInternal,
+            _ when field.IsFamily => AccessModifier.Protected,
+            _ when field.IsAssembly => AccessModifier.Internal,
+            _ => AccessModifier.Internal
         };
     }
     public static string GetFieldModifiers(this FieldInfo field)

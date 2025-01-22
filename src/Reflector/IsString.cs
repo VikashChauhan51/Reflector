@@ -152,4 +152,44 @@ public static class IsString
     {
         return StringComparer.OrdinalIgnoreCase.Equals(actual, expected);
     }
+    public static int IndexOfFirstMismatch(this string value, string expected, IEqualityComparer<string> comparer)
+    {
+        for (int index = 0; index < value.Length; index++)
+        {
+            if (index >= expected.Length || !comparer.Equals(value[index..(index + 1)], expected[index..(index + 1)]))
+            {
+                return index;
+            }
+        }
+
+        return -1;
+    }
+    public static string? Capitalize(this string? @this)
+    {
+        if (@this ==null || @this.Length == 0)
+        {
+            return @this;
+        }
+
+        char[] charArray = @this.ToCharArray();
+        charArray[0] = char.ToUpperInvariant(charArray[0]);
+        return new string(charArray);
+    }
+    public static int CountSubstring(this string str, string substring, IEqualityComparer<string> comparer)
+    {
+        string actual = str ?? string.Empty;
+        string search = substring ?? string.Empty;
+
+        int count = 0;
+        int maxIndex = actual.Length - search.Length;
+        for (int index = 0; index <= maxIndex; index++)
+        {
+            if (comparer.Equals(actual[index..(index + search.Length)], search))
+            {
+                count++;
+            }
+        }
+
+        return count;
+    }
 }

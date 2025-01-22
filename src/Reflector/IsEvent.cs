@@ -5,10 +5,10 @@ namespace VReflector;
 
 public static class IsEvent
 {
-    public static string GetEventAccessModifier(this EventInfo @event)
+    public static AccessModifier? GetEventAccessModifier(this EventInfo @event)
     {
         var method = @event?.GetAddMethod() ?? @event?.GetRemoveMethod(true);
-        return method?.GetMethodAccessModifier() ?? string.Empty;
+        return method?.GetMethodAccessModifier();
     }
     public static string GetEventModifiers(this EventInfo @event)
     {
